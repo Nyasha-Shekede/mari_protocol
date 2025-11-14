@@ -1,0 +1,145 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    volumes: ["redis_data:/data"]
+    networks: [mari-prod]
+
+  inference:
+    build: ./inference
+    ports: ["3002:3002"]
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - SENTINEL_AUTH_TOKEN
+    depends_on: [redis]
+    networks: [mari-prod]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http=require('http');const chk=(p,cb)=>http.get('http://localhost:3002'+p,r=>cb(r.statusCode===200)).on('error',()=>cb(false));chk('/ready',ok1=>chk('/live',ok2=>process.exit(ok1&&ok2?0:1)));"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  trainer:
+    build: ./trainer
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    networks: [mari-prod]
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8083/ready',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  rabbitmq:
+    image: rabbitmq:3.12-alpine
+    ports: ["5672:5672"]
+    networks: [mari-prod]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    tmpfs:
+      - /var/lib/rabbitmq
+    restart: unless-stopped
+
+  model-builder:
+    build: ./model-builder
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on: [redis]
+    networks: [mari-prod]
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports: ["9095:9090"]
+    depends_on: [inference]
+    networks: [mari-prod]
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports: ["3005:3000"]
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on: [prometheus]
+    networks: [mari-prod]
+
+  crypto-adapter:
+    build: ./crypto-adapter
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - REDIS_URL=redis://redis:6379
+      - BITCOIN_MEMPOOL_API=${BITCOIN_MEMPOOL_API}
+      - ETHEREUM_RPC_URL=${ETHEREUM_RPC_URL}
+      - ETHEREUM_POLL_INTERVAL=${ETHEREUM_POLL_INTERVAL}
+      - SOLANA_RPC_URL=${SOLANA_RPC_URL}
+      - SOLANA_POLL_INTERVAL=${SOLANA_POLL_INTERVAL}
+      - BTC_USD_PRICE=${BTC_USD_PRICE}
+      - ETH_USD_PRICE=${ETH_USD_PRICE}
+      - SOL_USD_PRICE=${SOL_USD_PRICE}
+      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED}
+    depends_on:
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    networks: [mari-prod]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8081/ready',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  label-oracle:
+    build: ./label-oracle
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - REDIS_URL=redis://redis:6379
+      - CERTIK_API_URL=${CERTIK_API_URL}
+      - CERTIK_API_KEY=${CERTIK_API_KEY}
+      - CHAINALYSIS_API_KEY=${CHAINALYSIS_API_KEY}
+      - ENABLE_CERTIK=${ENABLE_CERTIK}
+      - ENABLE_CHAINALYSIS=${ENABLE_CHAINALYSIS}
+    depends_on:
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    networks: [mari-prod]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8082/ready',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  redis_data:
+
+networks:
+  mari-prod:
+    external: true

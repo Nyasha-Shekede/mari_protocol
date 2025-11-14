@@ -1,0 +1,119 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "type": "row",
+      "title": "Crypto Adapter",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "type": "stat",
+      "title": "Publish Success (total)",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "targets": [
+        { "expr": "crypto_adapter_publish_success_total" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Publish Failure (total)",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "targets": [
+        { "expr": "crypto_adapter_publish_failure_total" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "DLQ Sent (total)",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "targets": [
+        { "expr": "crypto_adapter_dlq_sent_total" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Retry Attempts (total)",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "targets": [
+        { "expr": "crypto_adapter_retry_attempts_total" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Dedupe Hits (total)",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 5 },
+      "targets": [
+        { "expr": "crypto_adapter_dedupe_hits_total" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Publishes Over Time",
+      "gridPos": { "h": 8, "w": 18, "x": 6, "y": 5 },
+      "targets": [
+        { "expr": "rate(crypto_adapter_publish_success_total[1m])", "legendFormat": "success" },
+        { "expr": "rate(crypto_adapter_publish_failure_total[1m])", "legendFormat": "failure" },
+        { "expr": "rate(crypto_adapter_dlq_sent_total[1m])", "legendFormat": "dlq" }
+      ]
+    },
+
+    { "type": "row", "title": "Label Oracle", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 13 } },
+    {
+      "type": "stat",
+      "title": "Labels Published (total)",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 14 },
+      "targets": [
+        { "expr": "label_oracle_publish_success_total" }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Label Publish Failures (total)",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 14 },
+      "targets": [
+        { "expr": "label_oracle_publish_failure_total" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Labels Over Time",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "targets": [
+        { "expr": "rate(label_oracle_publish_success_total[1m])", "legendFormat": "success" },
+        { "expr": "rate(label_oracle_publish_failure_total[1m])", "legendFormat": "failure" }
+      ]
+    },
+
+    { "type": "row", "title": "Trainer", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 } },
+    {
+      "type": "stat",
+      "title": "Trainer Ready",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 23 },
+      "targets": [
+        { "expr": "trainer_ready" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Trainer Consume Rate",
+      "gridPos": { "h": 8, "w": 12, "x": 6, "y": 23 },
+      "targets": [
+        { "expr": "rate(trainer_consumed_total[1m])", "legendFormat": "events/s" }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["mari", "crypto", "oracle"],
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "Mari Crypto + Label Oracle",
+  "version": 1
+}

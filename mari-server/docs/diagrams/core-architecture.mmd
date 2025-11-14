@@ -1,0 +1,26 @@
+flowchart LR
+  subgraph Client[Demo Client / Scripts]
+    A[Create Transaction]\n(HTTP to Core)
+    B[Compute Seals]\n(motion & batch)
+    C[Call Core Settlement]\n(Bearer JWT)
+    D[Verify IncrementKey]\n(HTTP to Bank)
+  end
+
+  subgraph Core[Core Server :3000]
+    T[Transactions API]\nValidate physics & coupon
+    S[Settlement API]\nValidate seal & auth
+    SV[SettlementService]\nFilter valid txs\ncall BankClient
+    M[(MongoDB)]
+  end
+
+  subgraph Bank[Mock Bank HSM :3001]
+    BA[Accounts]\n(merchant/reserve)
+    BS[Settlement]\n(commissions, transfer)
+    HSM[HSM]\n(increment key, verify)
+  end
+
+  A --> T --> M
+  B --> C --> S --> SV
+  SV -->|HTTP| BS --> HSM
+  HSM -->|incrementKey| SV --> M
+  D --> HSM

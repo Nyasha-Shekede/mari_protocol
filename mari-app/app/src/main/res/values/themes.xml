@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Application theme using Material3 without ActionBar -->
+    <style name="Theme.Mari" parent="Theme.Material3.DayNight.NoActionBar" />
+</resources>

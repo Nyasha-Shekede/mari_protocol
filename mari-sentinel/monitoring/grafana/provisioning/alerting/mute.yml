@@ -1,0 +1,16 @@
+apiVersion: 1
+
+muteTimeIntervals:
+  - orgId: 1
+    name: mute-all
+    time_intervals:
+      - times:
+          - start_time: '00:00'
+            end_time: '24:00'
+        weekdays: ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']
+
+policies:
+  - orgId: 1
+    receiver: grafana-default-email
+    group_by: ['...']
+    muteTimeIntervals: [mute-all]

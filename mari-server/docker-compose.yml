@@ -1,0 +1,84 @@
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: mari-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [mari-prod]
+
+  app:
+    build:
+      context: ..
+      dockerfile: mari-server/Dockerfile
+      args:
+        NODE_ENV: production
+        BUILD_TARGET: production
+    container_name: mari-core
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=mongodb://mongo:27017/mari-core
+      - BANK_BASE_URL=http://mari-mock-bank:3001
+      - SENTINEL_URL=http://inference:3002
+      - SENTINEL_THRESHOLD=850
+      - SENTINEL_AUTH_TOKEN
+      - TWILIO_ACCOUNT_SID
+      - TWILIO_AUTH_TOKEN
+      - TWILIO_MESSAGING_SERVICE_SID
+    ports:
+      - "3000:3000"
+    networks: [mari-prod]
+
+  app-dev:
+    build:
+      context: ..
+      dockerfile: mari-server/Dockerfile
+      args:
+        NODE_ENV: development
+        BUILD_TARGET: development
+    container_name: mari-core-dev
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=mongodb://mongo:27017/mari-core
+      - BANK_BASE_URL=http://mari-mock-bank:3001
+      - SENTINEL_URL=http://inference:3002
+      - SENTINEL_THRESHOLD=850
+      - SENTINEL_AUTH_TOKEN
+      - TWILIO_ACCOUNT_SID
+      - TWILIO_AUTH_TOKEN
+      - TWILIO_MESSAGING_SERVICE_SID
+    ports:
+      - "3003:3000"
+    # Mount the project for live reload, but keep node_modules from container
+    volumes:
+      - .:/app/mari-server
+      - mari_server_node_modules:/app/mari-server/node_modules
+    command: npm run dev
+    networks: [mari-prod]
+
+volumes:
+  mongo-data:
+  mari_server_node_modules:
+
+networks:
+  mari-prod:
+    external: true

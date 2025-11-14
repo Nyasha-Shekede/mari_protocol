@@ -1,0 +1,57 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Inference Requests",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(inference_requests_total)", "legendFormat": "requests", "refId": "A"}],
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0}
+    },
+    {
+      "type": "timeseries",
+      "title": "Request Duration (p50/p90/p99)",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"expr": "histogram_quantile(0.5, sum by (le)(rate(inference_duration_seconds_bucket[5m])))", "legendFormat": "p50", "refId": "A"},
+        {"expr": "histogram_quantile(0.9, sum by (le)(rate(inference_duration_seconds_bucket[5m])))", "legendFormat": "p90", "refId": "B"},
+        {"expr": "histogram_quantile(0.99, sum by (le)(rate(inference_duration_seconds_bucket[5m])))", "legendFormat": "p99", "refId": "C"}
+      ],
+      "gridPos": {"h": 6, "w": 12, "x": 6, "y": 0}
+    },
+    {
+      "type": "timeseries",
+      "title": "Score Distribution",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"expr": "sum by (le) (rate(inference_score_bucket[5m]))", "legendFormat": "le={{le}}", "refId": "A"}
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6}
+    },
+    {
+      "type": "state-timeline",
+      "title": "Active Model Version",
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"expr": "label_replace(model_version_info, \"model\", \"$1\", \"model_id\", \"(.*)\")", "legendFormat": "{{model_id}}", "refId": "A"}
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6}
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["mari", "sentinel"],
+  "templating": {"list": []},
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Mari Sentinel Overview",
+  "version": 1
+}

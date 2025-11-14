@@ -1,0 +1,104 @@
+apiVersion: 1
+
+# Grafana managed alert rules provisioning
+# Requires Grafana 8+ unified alerting
+
+groups:
+  - orgId: 1
+    name: mari-crypto-alerts
+    folder: Alerts
+    interval: 1m
+    rules:
+      - uid: dlq_rate_high
+        title: High DLQ rate (crypto-adapter)
+        condition: C
+        data:
+          - refId: A
+            queryType: timeSeriesQuery
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: Prometheus
+            model:
+              datasource:
+                type: prometheus
+                uid: Prometheus
+              expr: rate(crypto_adapter_dlq_sent_total[5m])
+              interval: 1m
+              legendFormat: dlq_rate
+              refId: A
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0.1
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              refId: C
+              type: classic_conditions
+        for: 5m
+        annotations:
+          summary: DLQ rate is high for crypto-adapter
+          runbook_url: https://runbooks.example/mari/dlq
+        labels:
+          severity: warning
+
+      - uid: publish_failures_sustained
+        title: Sustained publish failures (crypto-adapter)
+        condition: C
+        data:
+          - refId: A
+            queryType: timeSeriesQuery
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: Prometheus
+            model:
+              datasource:
+                type: prometheus
+                uid: Prometheus
+              expr: rate(crypto_adapter_publish_failure_total[5m])
+              interval: 1m
+              legendFormat: failure_rate
+              refId: A
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              refId: C
+              type: classic_conditions
+        for: 10m
+        annotations:
+          summary: Publish failures sustained over threshold
+          runbook_url: https://runbooks.example/mari/publish-failure
+        labels:
+          severity: critical

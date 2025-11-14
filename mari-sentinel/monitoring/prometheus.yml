@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: 'mari-inference'
+    static_configs:
+      - targets: ['inference:3002']
+    metrics_path: /metrics
+
+  - job_name: 'mari-crypto-adapter'
+    static_configs:
+      - targets: ['crypto-adapter:8081']
+    metrics_path: /metrics
+
+  - job_name: 'mari-label-oracle'
+    static_configs:
+      - targets: ['label-oracle:8082']
+    metrics_path: /metrics
+
+  - job_name: 'mari-trainer'
+    static_configs:
+      - targets: ['trainer:8083']
+    metrics_path: /metrics

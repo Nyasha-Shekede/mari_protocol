@@ -1,0 +1,18 @@
+services:
+  mari-mock-bank:
+    build:
+      context: ..
+      dockerfile: mock-bank-hsm/Dockerfile
+    pull_policy: build
+    container_name: mari-mock-bank
+    env_file:
+      - .env
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+    networks:
+      - mari-prod
+
+networks:
+  mari-prod:
+    external: true

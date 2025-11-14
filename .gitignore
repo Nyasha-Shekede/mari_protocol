@@ -1,0 +1,37 @@
+# Root ignore patterns
+# Ignore Windows NUL ghost files that can appear under subrepos on some checkouts
+mari-server/NUL
+mock-bank-hsm/NUL
+mock-phone/NUL
+mock-app/NUL
+mari-shared-libs/NUL
+**/NUL
+
+# Node / TypeScript builds and caches
+**/node_modules/
+**/dist/
+**/build/
+**/coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+**/*.log
+
+# IDE / Editor files
+.idea/
+*.iml
+.vscode/
+
+# Gradle / Android build artifacts
+.gradle/
+**/.gradle/
+mari-app/.cxx/
+mari-app/local.properties
+mari-app/**/build/
+
+# OS junk
+Thumbs.db
+Desktop.ini
+.DS_Store

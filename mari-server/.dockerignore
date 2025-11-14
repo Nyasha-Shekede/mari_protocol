@@ -1,0 +1,17 @@
+# Docker ignore
+node_modules
+npm-debug.log
+Dockerfile*
+.dockerignore
+.git
+.gitignore
+.idea
+.vscode
+coverage
+logs
+*.log
+.env
+
+# OS files
+.DS_Store
+Thumbs.db

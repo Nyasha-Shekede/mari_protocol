@@ -1,0 +1,16 @@
+flowchart LR
+  subgraph Core[Core Server :3000]
+    S[Settlement API]\n(HTTP client)
+  end
+
+  subgraph Bank[Mock Bank HSM :3001]
+    ACC[Accounts API]\n(merchant/reserve)
+    SET[Settlement API]\n(validate seal, commissions, transfer)
+    HSM[HSM API]\n(increment key, verify)
+    STORE[(In-memory Store)]
+  end
+
+  S -->|POST /api/settlement/process| SET
+  ACC <--> STORE
+  SET <--> STORE
+  SET --> HSM
