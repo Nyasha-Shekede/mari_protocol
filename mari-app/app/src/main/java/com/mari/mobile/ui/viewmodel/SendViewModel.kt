@@ -128,6 +128,10 @@ class SendViewModel @Inject constructor(
                 val recipient = _uiState.value.recipientBioHash
                     ?: throw IllegalStateException("Recipient not found")
                 
+                // Get current user's bioHash from repository
+                val currentUser = userRepository.getCurrentUser()
+                    ?: throw IllegalStateException("User not authenticated")
+                
                 // Send payment using TransactionManager (immediate settlement, no delays)
                 val result = transactionManager.sendPayment(recipient, amount)
                 
@@ -136,7 +140,7 @@ class SendViewModel @Inject constructor(
                         // Save transaction to database
                         val transaction = Transaction(
                             id = java.util.UUID.randomUUID().toString(),
-                            senderBioHash = "demo-sender",
+                            senderBioHash = currentUser.bloodHash,
                             receiverBioHash = recipient,
                             amount = amount,
                             locationGrid = location?.let { "${it.lat},${it.lng}" } ?: "unknown",

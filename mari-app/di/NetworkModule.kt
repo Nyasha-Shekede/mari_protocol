@@ -4,7 +4,6 @@ import com.Mari.mobile.BuildConfig
 import com.Mari.mobileapp.service.core.CoreApi
 import com.Mari.mobileapp.service.core.CoreGateway
 import com.Mari.mobileapp.service.core.CoreGatewayImpl
-import com.Mari.mobileapp.service.core.FakeCoreGateway
 import com.Mari.mobileapp.service.core.AuthStore
 import com.Mari.mobileapp.service.bank.BankApi
 import com.Mari.mobileapp.service.bank.BankGateway
@@ -66,7 +65,7 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideCoreGateway(api: CoreApi, auth: AuthStore): CoreGateway =
-        if (BuildConfig.DEV_OFFLINE) FakeCoreGateway() else CoreGatewayImpl(api, auth)
+        CoreGatewayImpl(api, auth)
 
     // --- Bank (Mock HSM) ---
     @Provides

@@ -31,20 +31,28 @@ fun MainScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
-    // Location updates
+    // Location updates with permission check
     val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        // Start location updates
-        val fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(context)
-        try {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                location?.let {
-                    viewModel.updateLocation(it.latitude, it.longitude)
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            val fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(context)
+            try {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    location?.let {
+                        viewModel.updateLocation(it.latitude, it.longitude)
+                    }
                 }
+            } catch (e: Exception) {
+                // Handle error
             }
-        } catch (e: Exception) {
-            // Handle permission denial
         }
+    }
+    
+    LaunchedEffect(Unit) {
+        // Request location permission
+        locationPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
     }
     
     Scaffold(
@@ -53,12 +61,12 @@ fun MainScreen(
                 title = {
                     Column {
                         Text(
-                            text = "John Doe",
+                            text = uiState.userName.ifEmpty { "User" },
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            text = "Phone: 0000001001",
+                            text = "Phone: ${uiState.userPhone.ifEmpty { "Loading..." }}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

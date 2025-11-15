@@ -33,8 +33,6 @@ android {
         // Comma-separated list of allowed SMS sender numbers (e.g., Twilio numbers) for receipt processing
         val allowedSmsSenders = (project.findProperty("allowedSmsSenders") as String?) ?: ""
         buildConfigField("String", "ALLOWED_SMS_SENDERS", "\"$allowedSmsSenders\"")
-        // Offline dev toggle (default false). Override with -PdevOffline=true
-        buildConfigField("boolean", "DEV_OFFLINE", "false")
     }
 
     buildTypes {
@@ -49,10 +47,6 @@ android {
         debug {
             isMinifyEnabled = false
             // Debug uses defaults from defaultConfig (emulator by default).
-            val devOffline = (project.findProperty("devOffline") as String?)?.equals("true", ignoreCase = true) == true
-            if (devOffline) {
-                buildConfigField("boolean", "DEV_OFFLINE", "true")
-            }
         }
         // Build type optimized for physical devices on same LAN as the host.
         create("debugPhysical") {
@@ -68,10 +62,6 @@ android {
             val physAllowed = (project.findProperty("allowedSmsSendersPhysical") as String?)?.takeIf { it.isNotBlank() }
             if (physAllowed != null) {
                 buildConfigField("String", "ALLOWED_SMS_SENDERS", "\"$physAllowed\"")
-            }
-            val devOffline = (project.findProperty("devOffline") as String?)?.equals("true", ignoreCase = true) == true
-            if (devOffline) {
-                buildConfigField("boolean", "DEV_OFFLINE", "true")
             }
         }
     }

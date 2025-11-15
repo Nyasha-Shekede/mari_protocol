@@ -44,19 +44,27 @@ fun SendFlowScreen(
     var amount by remember { mutableStateOf("") }
     var sendMode by remember { mutableStateOf("offline") }
     
-    // Get location
+    // Get location with permission check
     var location by remember { mutableStateOf<com.Mari.mobile.ui.viewmodel.LocationInfo?>(null) }
-    LaunchedEffect(Unit) {
-        val fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(context)
-        try {
-            fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
-                loc?.let {
-                    location = com.Mari.mobile.ui.viewmodel.LocationInfo(it.latitude, it.longitude)
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            val fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(context)
+            try {
+                fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
+                    loc?.let {
+                        location = com.Mari.mobile.ui.viewmodel.LocationInfo(it.latitude, it.longitude)
+                    }
                 }
+            } catch (e: Exception) {
+                // Handle error
             }
-        } catch (e: Exception) {
-            // Handle permission denial
         }
+    }
+    
+    LaunchedEffect(Unit) {
+        locationPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
     }
     
     Scaffold(

@@ -15,6 +15,9 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE blood_hash = :bloodHash")
     suspend fun getUserByBloodHash(bloodHash: String): UserEntity?
 
+    @Query("SELECT * FROM users LIMIT 1")
+    suspend fun getAllUsers(): List<UserEntity>
+
     @Update
     suspend fun updateUser(user: UserEntity)
 

@@ -11,7 +11,7 @@ class UserMapper @Inject constructor(
     private val MariProtocol: MariProtocol
 ) {
     fun createNewUser(): User {
-        val bloodHash = physicsSensorManager.simulateVeinScan()
+        val bloodHash = physicsSensorManager.generateUserIdentifier()
         val locationGrid = physicsSensorManager.locationGrid.value
         return User(
             id = UUID.randomUUID().toString(),

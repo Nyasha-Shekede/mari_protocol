@@ -67,7 +67,7 @@ fun ReceiveScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "Your Mari ID",
+                        text = "Your MariPay ID",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -104,7 +104,9 @@ fun ReceiveScreen(
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
-                            text = "0.0000, 0.0000",
+                            text = uiState.location?.let { 
+                                "${String.format("%.4f", it.lat)}, ${String.format("%.4f", it.lng)}" 
+                            } ?: "Getting location...",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium
                         )
@@ -163,7 +165,7 @@ fun ReceiveScreen(
                     onClick = {
                         val shareIntent = Intent().apply {
                             action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_TEXT, "Here is my Mari ID to send me money: $userId")
+                            putExtra(Intent.EXTRA_TEXT, "Send me money on MariPay! My ID: $userId")
                             type = "text/plain"
                         }
                         context.startActivity(Intent.createChooser(shareIntent, "Share ID"))

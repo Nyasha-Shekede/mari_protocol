@@ -1,0 +1,31 @@
+# Mari Mobile App - Production Configuration Template
+# Copy this file to gradle.properties and update with your production values
+
+# Production Server URLs
+# Replace with your actual production server URLs
+coreBaseUrl=https://api.mari.example.com
+bankBaseUrl=https://bank.mari.example.com
+
+# Allowed SMS Senders (comma-separated)
+# Add your Twilio phone numbers that will send transaction receipts
+allowedSmsSenders=+15704582189,+1234567890
+
+# Physical Device Testing (LAN)
+# Uncomment and update these for testing on physical devices
+# Use your computer's LAN IP address (find with: ipconfig on Windows, ifconfig on Mac/Linux)
+#coreBaseUrlPhysical=http://192.168.1.100:3000
+#bankBaseUrlPhysical=http://192.168.1.100:3001
+#allowedSmsSendersPhysical=+15704582189
+
+# Android Emulator Testing (Development)
+# For emulator, use 10.0.2.2 to access host machine's localhost
+# These are the defaults if no gradle.properties exists
+# coreBaseUrl=http://10.0.2.2:3000
+# bankBaseUrl=http://10.0.2.2:3001
+
+# Build Configuration
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+org.gradle.parallel=true
+android.useAndroidX=true
+kotlin.code.style=official
+android.nonTransitiveRClass=true

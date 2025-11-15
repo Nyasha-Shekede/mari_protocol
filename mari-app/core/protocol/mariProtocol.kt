@@ -5,6 +5,18 @@ import com.Mari.mobileapp.core.physics.PhysicsSensorManager
 
 /**
  * Handles generation and parsing of Mari protocol strings
+ * 
+ * IMPORTANT NOTE ON VARIABLE NAMES:
+ * - "bloodHash", "senderBio", "receiverBio", "bioHash" are TERRIBLE names!
+ * - They are NOT biometric data - they're just pseudonymous user account identifiers
+ * - Think of them as: userId, senderId, receiverId, accountId
+ * - NO special biometric hardware is needed - these are just random unique IDs
+ * 
+ * The real security comes from:
+ * 1. Device key (kid) - hardware-backed ECDSA P-256 key in Android Keystore
+ * 2. Motion seal - accelerometer data for anti-automation
+ * 3. Location grid - coarse GPS location
+ * 4. User unlocks device with ANY method (fingerprint/PIN/face/pattern)
  */
 class MariProtocol(
     private val cryptoManager: MariCryptoManager,
@@ -18,9 +30,12 @@ class MariProtocol(
 
     /**
      * Generate a Function ID string
+     * 
+     * @param bloodHash WARNING: Misleading name! This is NOT biometric data.
+     *                  It's just a user account identifier (should be renamed to userId)
      */
     fun generateFunctionId(
-        bloodHash: String,
+        bloodHash: String,  // TODO: Rename to userId - NOT biometric data!
         readyCash: Double,
         totalMoney: Double
     ): String {
@@ -34,10 +49,15 @@ class MariProtocol(
 
     /**
      * Generate a Transfer Coupon string
+     * 
+     * @param senderBio WARNING: Misleading name! This is NOT biometric data.
+     *                  It's just the sender's account identifier (should be renamed to senderId)
+     * @param receiverBio WARNING: Misleading name! This is NOT biometric data.
+     *                    It's just the receiver's account identifier (should be renamed to receiverId)
      */
     fun generateTransferCoupon(
-        senderBio: String,
-        receiverBio: String,
+        senderBio: String,      // TODO: Rename to senderId - NOT biometric data!
+        receiverBio: String,    // TODO: Rename to receiverId - NOT biometric data!
         amount: Double,
         includeTimestamp: Boolean = true
     ): String {
@@ -317,13 +337,16 @@ class MariProtocol(
 
     /**
      * Data classes for Mari entities
+     * 
+     * WARNING: Variable names like "bloodHash", "senderBio", "receiverBio" are misleading!
+     * They are NOT biometric data - just pseudonymous user account identifiers.
      */
     sealed class MariEntity
 
     data class FunctionIdEntity(
         val version: Int,
         val grid: String,
-        val bloodHash: String,
+        val bloodHash: String,  // TODO: Rename to userId - NOT biometric data!
         val readyCash: Double,
         val totalMoney: Double,
         val seal: String,
@@ -332,8 +355,8 @@ class MariProtocol(
     ) : MariEntity()
 
     data class TransferCouponEntity(
-        val senderBio: String,
-        val receiverBio: String,
+        val senderBio: String,      // TODO: Rename to senderId - NOT biometric data!
+        val receiverBio: String,    // TODO: Rename to receiverId - NOT biometric data!
         val amount: Double,
         val grid: String,
         val expiry: Long,

@@ -1,17 +1,44 @@
-# Android build container for Mari App
-# Uses a prebuilt Android SDK + JDK image so you don't need Java/SDK on the host.
+# Lightweight Android build container for Mari App
+# Uses Eclipse Temurin (OpenJDK) + manual Android SDK installation for reliability
 
-FROM ghcr.io/cirruslabs/android-sdk:34
+FROM eclipse-temurin:17-jdk-jammy
 
-# Set working directory inside the container
+# Install required tools
+RUN apt-get update && apt-get install -y \
+    wget \
+    unzip \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up Android SDK
+ENV ANDROID_HOME=/opt/android-sdk
+ENV PATH=${PATH}:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools
+
+# Download and install Android command line tools
+RUN mkdir -p ${ANDROID_HOME}/cmdline-tools && \
+    cd ${ANDROID_HOME}/cmdline-tools && \
+    wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip && \
+    unzip -q commandlinetools-linux-9477386_latest.zip && \
+    rm commandlinetools-linux-9477386_latest.zip && \
+    mv cmdline-tools latest
+
+# Accept licenses and install required SDK components (34 for the app)
+RUN yes | sdkmanager --licenses && \
+    sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+# Set working directory
 WORKDIR /workspace
 
-# Gradle will use this directory for its cache (persists only per-container run)
+# Gradle cache directory
 ENV GRADLE_USER_HOME=/workspace/.gradle
 
-# Ensure all Java processes (Gradle, Kotlin daemon, kapt workers) get the required
-# module exports/opens so kapt can access javac internals on modular JDKs.
+# Gradle options - Increase memory and optimize for Docker
+ENV GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs='-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError' -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
+
+# Java tool options for Kotlin compilation
 ENV JAVA_TOOL_OPTIONS="\
+  -Xmx4g \
+  -XX:MaxMetaspaceSize=1g \
   --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
   --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
   --add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED \
@@ -22,5 +49,5 @@ ENV JAVA_TOOL_OPTIONS="\
   --add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED \
   --add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED"
 
-# Default command just prints help; actual build command is provided by Makefile
-CMD ["./gradlew", "-p", ".", ":app:assembleDebug"]
+# Default command - no daemon, clean build
+CMD ["./gradlew", "--no-daemon", "-p", ".", ":app:assembleDebug"]

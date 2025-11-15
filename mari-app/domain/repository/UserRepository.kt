@@ -7,6 +7,7 @@ interface UserRepository {
     suspend fun createUser(user: User)
     suspend fun getUser(userId: String): User?
     suspend fun getUserByBloodHash(bloodHash: String): User?
+    suspend fun getCurrentUser(): User?
     suspend fun updateUser(user: User)
     suspend fun deleteUser(userId: String)
     fun observeUser(userId: String): Flow<User?>

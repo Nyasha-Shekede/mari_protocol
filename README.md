@@ -63,12 +63,35 @@ Basic health check:
 Invoke-RestMethod -Uri http://localhost:3000/health
 ```
 
+## Hardware Requirements (Minimal!)
+
+Mari works on **any standard Android device** - NO special hardware needed:
+
+- ✅ **Android 6.0+** (Marshmallow or later)
+- ✅ **Android Keystore** (hardware-backed keys - standard on all devices)
+- ✅ **Accelerometer** (motion data - standard sensor)
+- ✅ **GPS** (location - standard sensor)
+- ✅ **SMS capability** (standard)
+- ✅ **Any unlock method** (fingerprint, face, PIN, pattern, swipe)
+
+**NOT Required:**
+- ❌ IR cameras
+- ❌ Vein scanners
+- ❌ Special biometric hardware
+- ❌ High-end devices
+
+**Works on $50+ Android phones - 3 billion compatible devices worldwide!**
+
+**⚠️ IMPORTANT NOTE:** The codebase uses misleading variable names like `bioHash`, `bloodHash`, `senderBio`, `receiverBio`. These are **NOT biometric data** - they're just pseudonymous user account identifiers (like user IDs). See [mari-app/BIOHASH-NAMING-ISSUE.md](mari-app/BIOHASH-NAMING-ISSUE.md) for details.
+
+See [DEVICE-AUTHENTICATION-EXPLAINED.md](DEVICE-AUTHENTICATION-EXPLAINED.md) for how authentication actually works.
+
 ## Security & Finality (At a Glance)
 
 - Immediate finality: Only when the Bank HSM issues a signed increment key and the client verifies it.
 - No pending balances: UI updates after verified settlement.
 - Replay resistance: `couponHash` idempotency and expiry.
-- Authentication: standard device biometrics/PIN to unlock signing.
+- Authentication: User unlocks device (any method), app signs with hardware-backed device key.
 
 ## Documentation
 

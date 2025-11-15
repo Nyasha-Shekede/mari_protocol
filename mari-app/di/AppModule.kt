@@ -59,7 +59,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideNetworkManager(context: Context): NetworkManager =
-        NetworkManager(context, enableWifiP2p = !BuildConfig.DEV_OFFLINE)
+        NetworkManager(context, enableWifiP2p = true)
 
     // Transaction Manager
     @Provides

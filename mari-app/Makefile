@@ -37,22 +37,30 @@ help:
 	@echo "======================================"
 	@echo ""
 	@echo "🚀 Quick Start:"
-	@echo "  make build          Build debug APK"
-	@echo "  make install        Install and launch app"
-	@echo "  make test           Run all tests"
+	@echo "  make build-docker-install   Build with Docker + install (no SDK needed)"
+	@echo "  make logs-live              View live logs with timestamps"
+	@echo "  make test                   Run all tests"
 	@echo ""
 	@echo "📦 Core Operations:"
-	@echo "  make build          Build debug APK (development)"
-	@echo "  make build-prod     Build release APK (production)"
-	@echo "  make install        Install debug APK and launch"
-	@echo "  make uninstall      Remove app from device"
-	@echo "  make clean          Clean build artifacts"
+	@echo "  make build                  Build debug APK (requires Android SDK)"
+	@echo "  make build-docker           Build with Docker (no SDK needed)"
+	@echo "  make build-docker-install   Build with Docker + auto-install"
+	@echo "  make build-prod             Build release APK (production)"
+	@echo "  make install                Install debug APK and launch"
+	@echo "  make uninstall              Remove app from device"
+	@echo "  make clean                  Clean build artifacts"
 	@echo ""
 	@echo "🔧 Development:"
-	@echo "  make test           Run unit tests"
-	@echo "  make test-ui        Run instrumented tests"
-	@echo "  make lint           Run Android lint"
-	@echo "  make logs           Show app logs"
+	@echo "  make test                   Run unit tests"
+	@echo "  make test-ui                Run instrumented tests"
+	@echo "  make lint                   Run Android lint"
+	@echo "  make logs-live              Show live logs (recommended)"
+	@echo "  make logs                   Show app logs (filtered)"
+	@echo "  make logs-errors            Show error logs only"
+	@echo "  make logs-transaction       Show transaction logs"
+	@echo "  make logs-network           Show network logs"
+	@echo "  make logs-physics           Show physics sensor logs"
+	@echo "  make logs-auth              Show authentication logs"
 	@echo ""
 	@echo "📱 Device Management:"
 	@echo "  make devices        List connected devices"
@@ -65,7 +73,10 @@ help:
 	@echo "  make bundle         Build release bundle (Play Store)"
 	@echo ""
 	@echo "💡 Examples:"
-	@echo "  make install                        # Quick dev cycle"
+	@echo "  make build-docker-install           # Build with Docker + install (no SDK)"
+	@echo "  make logs-live                      # View live logs"
+	@echo "  make clear-logs && make logs-live   # Clear old logs first"
+	@echo "  make install                        # Quick dev cycle (requires SDK)"
 	@echo "  make clean build install            # Full rebuild"
 	@echo "  make test lint                      # Quality checks"
 	@echo "  make build-prod                     # Production build"
@@ -73,7 +84,7 @@ help:
 # ----------------------------------------------------------------------------
 # Core Operations (Standardized)
 # ----------------------------------------------------------------------------
-.PHONY: build build-prod build-physical build-docker install uninstall clean
+.PHONY: build build-prod build-physical build-docker build-docker-install install uninstall clean
 
 # Build debug APK (default development build)
 build:
@@ -86,8 +97,24 @@ build-docker:
 	@echo "🐳 Building Docker image $(DOCKER_IMAGE)..."
 	docker build -t $(DOCKER_IMAGE) .
 	@echo "📦 Building Mari App (debug) inside Docker..."
-	docker run --rm -v $(PWD):/workspace -w /workspace $(DOCKER_IMAGE) ./gradlew -p . $(APP_MOD):assembleDebug
+	docker run --rm -v "/$$(pwd | sed 's|^/||' | sed 's|/|/|g')":/workspace -w //workspace $(DOCKER_IMAGE) ./gradlew -p . $(APP_MOD):assembleDebug
 	@echo "✅ Debug APK built (Docker): $(APK_DEBUG)"
+
+# Build with Docker and install on connected device
+build-docker-install:
+	@echo "🐳 Building Docker image $(DOCKER_IMAGE)..."
+	docker build -t $(DOCKER_IMAGE) .
+	@echo "📦 Building Mari App (debug) inside Docker..."
+	@echo "⚠️  This may take 5-10 minutes on first run (downloading dependencies)..."
+	docker run --rm -m 6g --memory-swap 8g -v "C:\Users\user\mari_protocol\mari-app":/workspace -w //workspace $(DOCKER_IMAGE) ./gradlew --no-daemon --stacktrace -p . $(APP_MOD):assembleDebug
+	@echo "✅ Debug APK built (Docker): $(APK_DEBUG)"
+	@echo "📱 Installing on connected device..."
+	"$(ADB)" install -r "$(APK_DEBUG)"
+	@echo "🚀 Launching Mari App..."
+	"$(ADB)" shell monkey -p $(PACKAGE) -c android.intent.category.LAUNCHER 1
+	@echo "✅ App installed and launched"
+	@echo ""
+	@echo "💡 To view logs, run: make logs-live"
 
 # Build release APK (production)
 build-prod:
@@ -133,7 +160,7 @@ clean:
 # ----------------------------------------------------------------------------
 # Development & Testing (Standardized)
 # ----------------------------------------------------------------------------
-.PHONY: test test-ui lint logs run
+.PHONY: test test-ui lint logs logs-live logs-all logs-transaction logs-network logs-physics logs-auth run
 
 # Run unit tests
 test:
@@ -153,10 +180,41 @@ lint:
 	$(GRADLEW) -p . $(APP_MOD):lintDebug
 	@echo "✅ Lint completed"
 
-# Show app logs
+# Show app logs (filtered by package)
 logs:
 	@echo "📝 Showing Mari App logs..."
 	"$(ADB)" logcat | grep -E "$(PACKAGE)"
+
+# Show live logs with color and timestamps (recommended)
+logs-live:
+	@echo "📝 Showing Mari App logs (live with timestamps)..."
+	@echo "Press Ctrl+C to stop"
+	@echo ""
+	"$(ADB)" logcat -v time | grep --color=auto -E "$(PACKAGE)|MainActivity|SendViewModel|TransactionManager|CoreGateway|PhysicsSensor"
+
+# Show all logs (very verbose)
+logs-all:
+	@echo "📝 Showing all device logs..."
+	@echo "Press Ctrl+C to stop"
+	@echo ""
+	"$(ADB)" logcat -v time
+
+# Show logs by component
+logs-transaction:
+	@echo "📝 Showing transaction logs..."
+	"$(ADB)" logcat -v time | grep --color=auto -E "TransactionManager|SendViewModel|ReceiveScreen"
+
+logs-network:
+	@echo "📝 Showing network logs..."
+	"$(ADB)" logcat -v time | grep --color=auto -E "NetworkManager|CoreGateway|OkHttp|Retrofit"
+
+logs-physics:
+	@echo "📝 Showing physics sensor logs..."
+	"$(ADB)" logcat -v time | grep --color=auto -E "PhysicsSensorManager|MotionData|DeviceKeyManager"
+
+logs-auth:
+	@echo "📝 Showing authentication logs..."
+	"$(ADB)" logcat -v time | grep --color=auto -E "AuthScreen|BiometricPrompt|DeviceKeyManager"
 
 # Launch installed app
 run:

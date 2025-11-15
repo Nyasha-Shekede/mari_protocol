@@ -20,6 +20,12 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun getUserByBloodHash(bloodHash: String): User? =
         userDao.getUserByBloodHash(bloodHash)?.let { User.fromEntity(it) }
 
+    override suspend fun getCurrentUser(): User? {
+        // Get the first user from the database (single-user app for now)
+        // In production, this should use AuthStore to get the logged-in user's ID
+        return userDao.getAllUsers().firstOrNull()?.let { User.fromEntity(it) }
+    }
+
     override suspend fun updateUser(user: User) =
         userDao.updateUser(User.toEntity(user))
 

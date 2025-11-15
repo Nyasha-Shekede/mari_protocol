@@ -64,8 +64,8 @@ fun AuthScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Shield,
-                        contentDescription = "Mari Logo",
+                        imageVector = Icons.Default.AccountBalance,
+                        contentDescription = "MariPay Logo",
                         modifier = Modifier.size(40.dp),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
@@ -75,12 +75,12 @@ fun AuthScreen(
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "Mari Protocol",
+                text = "MariPay",
                 style = MaterialTheme.typography.headlineLarge
             )
             
             Text(
-                text = "Secure mobile banking with biometric authentication",
+                text = "Fast, secure payments with physics-based authentication",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -112,8 +112,9 @@ fun AuthScreen(
                             onFaceIdClick = {
                                 cameraLauncher.launch(Manifest.permission.CAMERA)
                                 isLoading = true
-                                // Simulate face auth
-                                kotlinx.coroutines.GlobalScope.launch {
+                                // TODO: Implement real face authentication
+                                // For now, simulate with delay
+                                androidx.compose.runtime.LaunchedEffect(Unit) {
                                     kotlinx.coroutines.delay(2500)
                                     isLoading = false
                                     onAuthSuccess()
@@ -140,8 +141,9 @@ fun AuthScreen(
                             },
                             onRegister = {
                                 isLoading = true
-                                // Simulate registration
-                                kotlinx.coroutines.GlobalScope.launch {
+                                // TODO: Implement real registration with backend
+                                // For now, simulate with delay
+                                androidx.compose.runtime.LaunchedEffect(Unit) {
                                     kotlinx.coroutines.delay(1500)
                                     isLoading = false
                                     onAuthSuccess()
@@ -303,7 +305,7 @@ fun authenticateWithBiometrics(
     
     val promptInfo = BiometricPrompt.PromptInfo.Builder()
         .setTitle("Authenticate with Biometrics")
-        .setSubtitle("Confirm your identity to access Mari")
+        .setSubtitle("Confirm your identity to access MariPay")
         .setNegativeButtonText("Cancel")
         .build()
     

@@ -26,9 +26,16 @@ class MainViewModel @Inject constructor(
     
     private fun loadData() {
         viewModelScope.launch {
-            val userBioHash = ""
-            val userName = "User"
-            val userPhone = ""
+            // Get current authenticated user
+            val currentUser = userRepository.getCurrentUser()
+            if (currentUser == null) {
+                _uiState.update { it.copy(error = "User not authenticated", isLoading = false) }
+                return@launch
+            }
+            
+            val userBioHash = currentUser.bloodHash
+            val userName = "User ${currentUser.bloodHash.take(8)}"
+            val userPhone = currentUser.bloodHash.take(10)
             
             // Load balance and transactions
             combine(

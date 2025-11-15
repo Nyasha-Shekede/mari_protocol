@@ -23,6 +23,9 @@ class DomainUserRepositoryImpl @Inject constructor(
     override suspend fun getUserByBloodHash(bloodHash: String): DomainUser? =
         dataRepo.getUserByBloodHash(bloodHash)?.toDomain()
 
+    override suspend fun getCurrentUser(): DomainUser? =
+        dataRepo.getCurrentUser()?.toDomain()
+
     override suspend fun updateUser(user: DomainUser) {
         dataRepo.updateUser(user.toData())
     }

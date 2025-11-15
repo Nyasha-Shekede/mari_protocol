@@ -130,15 +130,16 @@ class PhysicsSensorManager(
     }
 
     /**
-     * Simulate vein pattern detection (for demo purposes)
-     * In a real implementation, this would use IR camera data
+     * Generate a pseudonymous user identifier (for demo purposes)
+     * NOTE: This is NOT biometric data - just a random account ID
+     * In production, this would be generated during user registration
      */
-    fun simulateVeinScan(): String {
-        // Generate a consistent hash based on device ID and current time
+    fun generateUserIdentifier(): String {
+        // Generate a random unique identifier
         val deviceId = UUID.randomUUID().toString().hashCode()
         val currentTime = System.currentTimeMillis()
         val combinedHash = (deviceId xor currentTime.toInt()).toString(16)
-        return combinedHash.padStart(8, '0').take(8)
+        return "user_" + combinedHash.padStart(8, '0').take(8)
     }
 
     /**
@@ -163,7 +164,7 @@ class PhysicsSensorManager(
      * Generate a physics seed from all available sensor data
      */
     fun generatePhysicsSeed(): UInt {
-        val blood = simulateVeinScan().hashCode()
+        val blood = generateUserIdentifier().hashCode()
         val motion = motionData.value.toPacked()
         val light = lightLevel.value.toInt()
         val grid = locationGrid.value.hashCode()
