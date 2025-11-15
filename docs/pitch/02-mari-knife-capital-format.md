@@ -175,25 +175,29 @@ By using physics (motion + location + time) instead of passwords, we make paymen
 
 ## SLIDE 10: TEAM
 
-**Nyasha Shekede** - Founder & Architect
-- 2nd-year Computer Science & Engineering, UCT
-- Built full end-to-end system:
-  - Android app (Kotlin, Jetpack Compose)
-  - Physics seal algorithm
-  - HSM network design
-  - Bank integration protocol
-- Vision: Payment protocol for Africa
+**Nyasha Shekede** - Founder & CTO
+- Full-Stack Engineer | Systems Architect
+- CTO at OppCo (Opportunity Connect)
+- Computer Science & Engineering, UCT
+- Built full Mari system: Android app, physics seal algorithm, HSM network design, bank integration protocol
 
-**Advisors (In Progress):**
-- Banking partnerships (LOIs in discussion)
-- Security experts (post-raise)
-- Regulatory advisors (post-raise)
+**Dibanisa Fakude** - Co-Founder & Head of AI/ML
+- MSc in Data Science and AI, UCT
+- Currently at FNB South Africa (insider knowledge of banking systems)
+- Specializes in ML and AI models
+- Brings: Fraud detection algorithms, banking relationships, regulatory understanding
 
-**Hiring Plan (Post-Raise):**
-- Co-founder (business/finance)
-- CTO (payments infrastructure)
-- Compliance Officer (regulatory)
-- 2-5 Developers (mobile, backend)
+**Cebolenkosi Chamane** - Co-Founder & Business Development
+- Bachelor of Business Science (Computer Science), UCT (2024-2028)
+- Brings: Business strategy, market analysis, partnership development
+- Complements technical team with business acumen
+
+**Why This Team Wins:**
+- ✅ Technical depth (full-stack, AI/ML, systems architecture)
+- ✅ Banking insider (Diba at FNB = warm intros, domain knowledge)
+- ✅ Business + technical (Cebo bridges both worlds)
+- ✅ All UCT (strong network, local knowledge)
+- ✅ Complementary skills (no gaps)
 
 ---
 
