@@ -13,15 +13,26 @@
 - **Device Signing Keys (Client ECDSA)**
   - Purpose:
     - Bind payment intent (coupon) to a specific device and user.
+    - Provide non-repudiation and device authentication.
   - Type:
-    - ECDSA keypair held in Android Keystore.
+    - ECDSA P-256 keypair held in Android Keystore (hardware-backed).
+  - Implementation:
+    - Generated via `KeyPairGenerator` with `AndroidKeyStore` provider.
+    - Private key NEVER leaves device (hardware security module if available).
+    - Uses `KeyGenParameterSpec` with:
+      - Algorithm: `KEY_ALGORITHM_EC`
+      - Curve: `secp256r1` (P-256)
+      - Digest: `SHA256withECDSA`
+      - Purpose: `PURPOSE_SIGN | PURPOSE_VERIFY`
   - Identifiers:
-    - `kid` (8-hex key ID) — derived identifier sent with each signed transaction.
-    - `spki` (base64-encoded SubjectPublicKeyInfo) — registered with Core.
+    - `kid` (16-char hex) — Short identifier derived from public key (first 16 chars of Base64-encoded public key).
+    - `spki` (base64-encoded SubjectPublicKeyInfo) — Full public key registered with Core.
   - Usage:
-    - Device signs a canonicalized payload:
-      - `{ from, to, amount, grid, coupon }`.
-    - Core verifies signature using stored `spki`.
+    - Device signs motion seal with private key:
+      - `signature = ECDSA_Sign(seal, privateKey)`
+    - Transaction includes: `seal`, `signature`, `kid`
+    - Core verifies signature using stored `spki`:
+      - `ECDSA_Verify(seal, signature, publicKey)`
 
 - **Bank HSM Signing Keys (Server RSA)**
   - Purpose:

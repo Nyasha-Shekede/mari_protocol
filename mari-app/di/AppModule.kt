@@ -32,12 +32,23 @@ object AppModule {
 
     // PhysicsSensorManager is provided in PhysicsModule
 
+    // Device Key Manager
+    @Provides
+    @Singleton
+    fun provideDeviceKeyManager(): com.Mari.mobileapp.core.crypto.DeviceKeyManager {
+        return com.Mari.mobileapp.core.crypto.DeviceKeyManager().apply {
+            // Initialize device key on first use
+            initializeDeviceKey()
+        }
+    }
+
     // Mari Crypto Manager
     @Provides
     @Singleton
     fun provideMariCryptoManager(
-        physicsSensorManager: PhysicsSensorManager
-    ): MariCryptoManager = MariCryptoManager(physicsSensorManager)
+        physicsSensorManager: PhysicsSensorManager,
+        deviceKeyManager: com.Mari.mobileapp.core.crypto.DeviceKeyManager
+    ): MariCryptoManager = MariCryptoManager(physicsSensorManager, deviceKeyManager)
 
     // Mari Protocol (String Generator)
     @Provides

@@ -28,7 +28,6 @@ fun MariAppRoot() {
                 composable("main") {
                     MainScreen(
                         onSendClick = { navController.navigate("send") },
-                        onReceiveClick = { navController.navigate("receive") },
                         onLogout = { isAuthenticated = false }
                     )
                 }
@@ -38,11 +37,6 @@ fun MariAppRoot() {
                         onComplete = { navController.navigate("main") {
                             popUpTo("main") { inclusive = false }
                         }}
-                    )
-                }
-                composable("receive") {
-                    ReceiveScreen(
-                        onBack = { navController.popBackStack() }
                     )
                 }
             }

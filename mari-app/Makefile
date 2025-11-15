@@ -106,7 +106,11 @@ build-docker-install:
 	docker build -t $(DOCKER_IMAGE) .
 	@echo "📦 Building Mari App (debug) inside Docker..."
 	@echo "⚠️  This may take 5-10 minutes on first run (downloading dependencies)..."
+ifeq ($(OS),Windows_NT)
 	docker run --rm -m 6g --memory-swap 8g -v "C:\Users\user\mari_protocol\mari-app":/workspace -w //workspace $(DOCKER_IMAGE) ./gradlew --no-daemon --stacktrace -p . $(APP_MOD):assembleDebug
+else
+	docker run --rm -m 6g --memory-swap 8g -v "$$(pwd)":/workspace -w /workspace $(DOCKER_IMAGE) ./gradlew --no-daemon --stacktrace -p . $(APP_MOD):assembleDebug
+endif
 	@echo "✅ Debug APK built (Docker): $(APK_DEBUG)"
 	@echo "📱 Installing on connected device..."
 	"$(ADB)" install -r "$(APK_DEBUG)"

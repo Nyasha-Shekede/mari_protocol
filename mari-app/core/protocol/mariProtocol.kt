@@ -63,11 +63,11 @@ class MariProtocol(
     ): String {
         val grid = physicsSensorManager.locationGrid.value
         val expiry = if (includeTimestamp) System.currentTimeMillis() + COUPON_EXPIRY_MS else 0L
-        val seal = cryptoManager.generateSeal()
+        val signedSeal = cryptoManager.generateSignedSeal()
         val movementIntensity = physicsSensorManager.calculateMovementIntensity()
         val lightLevel = physicsSensorManager.lightLevel.value
 
-        return "Mari://xfer?from=${senderBio}&to=${receiverBio}&val=${amount}&g=${grid}&exp=${expiry}&s=${seal}&mi=${movementIntensity}&ll=${lightLevel}"
+        return "Mari://xfer?from=${senderBio}&to=${receiverBio}&val=${amount}&g=${grid}&exp=${expiry}&s=${signedSeal.seal}&sig=${signedSeal.signature}&kid=${signedSeal.kid}&mi=${movementIntensity}&ll=${lightLevel}"
     }
 
     /**

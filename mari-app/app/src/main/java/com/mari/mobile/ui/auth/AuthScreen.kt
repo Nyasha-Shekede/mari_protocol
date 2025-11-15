@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -30,8 +31,12 @@ fun AuthScreen(
     var selectedTab by remember { mutableStateOf(0) }
     var name by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var isCameraOn by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
+    var showDevMode by remember { mutableStateOf(false) }
+    var devClickCount by remember { mutableStateOf(0) }
     
     val cameraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -52,12 +57,18 @@ fun AuthScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // App Logo
+            // App Logo (tap 5 times for dev mode)
             Surface(
                 modifier = Modifier
                     .size(80.dp)
-                    .clip(CircleShape),
-                color = MaterialTheme.colorScheme.primary
+                    .clip(CircleShape)
+                    .clickable {
+                        devClickCount++
+                        if (devClickCount >= 5) {
+                            showDevMode = true
+                        }
+                    },
+                color = if (showDevMode) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
             ) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -80,9 +91,9 @@ fun AuthScreen(
             )
             
             Text(
-                text = "Fast, secure payments with physics-based authentication",
+                text = if (showDevMode) "🔧 DEV MODE ENABLED" else "Fast, secure payments with physics-based authentication",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (showDevMode) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
             )
             
             Spacer(modifier = Modifier.height(32.dp))
@@ -108,17 +119,19 @@ fun AuthScreen(
                     
                     when (selectedTab) {
                         0 -> LoginTab(
+                            email = email,
+                            onEmailChange = { email = it },
+                            password = password,
+                            onPasswordChange = { password = it },
                             isLoading = isLoading,
+                            showDevMode = showDevMode,
+                            onDevLogin = {
+                                // Dev mode: instant login
+                                onAuthSuccess()
+                            },
                             onFaceIdClick = {
                                 cameraLauncher.launch(Manifest.permission.CAMERA)
-                                isLoading = true
                                 // TODO: Implement real face authentication
-                                // For now, simulate with delay
-                                androidx.compose.runtime.LaunchedEffect(Unit) {
-                                    kotlinx.coroutines.delay(2500)
-                                    isLoading = false
-                                    onAuthSuccess()
-                                }
                             },
                             onBiometricClick = {
                                 authenticateWithBiometrics(context as FragmentActivity) { success ->
@@ -140,14 +153,9 @@ fun AuthScreen(
                                 }
                             },
                             onRegister = {
-                                isLoading = true
                                 // TODO: Implement real registration with backend
-                                // For now, simulate with delay
-                                androidx.compose.runtime.LaunchedEffect(Unit) {
-                                    kotlinx.coroutines.delay(1500)
-                                    isLoading = false
-                                    onAuthSuccess()
-                                }
+                                // For now, just authenticate
+                                onAuthSuccess()
                             },
                             isLoading = isLoading
                         )
@@ -160,7 +168,13 @@ fun AuthScreen(
 
 @Composable
 fun LoginTab(
+    email: String,
+    onEmailChange: (String) -> Unit,
+    password: String,
+    onPasswordChange: (String) -> Unit,
     isLoading: Boolean,
+    showDevMode: Boolean,
+    onDevLogin: () -> Unit,
     onFaceIdClick: () -> Unit,
     onBiometricClick: () -> Unit
 ) {
@@ -168,13 +182,76 @@ fun LoginTab(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Use your biometric authentication to unlock",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
+        if (showDevMode) {
+            // Dev Mode: Simple email/password login
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        text = "🔧 DEV MODE",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Text(
+                        text = "Demo: demo@mari.com / demo123",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            OutlinedTextField(
+                value = email,
+                onValueChange = onEmailChange,
+                label = { Text("Email") },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("demo@mari.com") }
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            OutlinedTextField(
+                value = password,
+                onValueChange = onPasswordChange,
+                label = { Text("Password") },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("demo123") }
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Button(
+                onClick = onDevLogin,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Login, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Dev Login (Skip Auth)")
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = "Or use biometric authentication below",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+        } else {
+            Text(
+                text = "Use your biometric authentication to unlock",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+        }
         
         Button(
             onClick = onFaceIdClick,

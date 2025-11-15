@@ -11,7 +11,8 @@ import javax.crypto.spec.SecretKeySpec
  * Handles all cryptographic operations for the Mari protocol
  */
 class MariCryptoManager(
-    private val physicsSensorManager: PhysicsSensorManager
+    private val physicsSensorManager: PhysicsSensorManager,
+    private val deviceKeyManager: DeviceKeyManager
 ) {
     companion object {
         private const val AES_KEY_SIZE = 256
@@ -113,6 +114,70 @@ class MariCryptoManager(
 
         // Use first 8 bytes of hash as seal
         return hash.copyOfRange(0, 8).joinToString("") { "%02x".format(it) }
+    }
+
+    /**
+     * Generate a cryptographically signed seal with KID
+     * HIGH ENTROPY - Impossible to reproduce
+     * 
+     * Includes:
+     * - Accelerometer (x, y, z) - motion patterns
+     * - Gyroscope (x, y, z) - rotation patterns  
+     * - Magnetometer (x, y, z) - orientation
+     * - Light sensor - ambient light
+     * - Temperature - device heat
+     * - Nanosecond timestamp - timing chaos
+     * - Millisecond timestamp - additional entropy
+     */
+    fun generateSignedSeal(): SignedSeal {
+        val motion = physicsSensorManager.motionData.value
+        val light = physicsSensorManager.lightLevel.value
+        val gyro = physicsSensorManager.gyroscopeData.value
+        val magnetic = physicsSensorManager.magneticData.value
+        val temp = physicsSensorManager.deviceTemperature.value
+        val nanoTime = System.nanoTime()
+        val milliTime = System.currentTimeMillis()
+        
+        // Additional entropy from timing
+        val nanoEntropy = (nanoTime % 1000000).toString()  // Last 6 digits of nanos
+        val milliEntropy = (milliTime % 10000).toString()  // Last 4 digits of millis
+
+        // Create HIGH ENTROPY seal data with ALL sensors + timing chaos
+        // This is IMPOSSIBLE to reproduce because:
+        // 1. Human motion is chaotic (never exactly the same)
+        // 2. Nanosecond timing is unpredictable
+        // 3. Multiple sensors create complex interaction
+        // 4. Environmental factors (light, temp, magnetic field) vary
+        val sealData = "${motion.x}:${motion.y}:${motion.z}:" +
+                      "${gyro.x}:${gyro.y}:${gyro.z}:" +
+                      "${magnetic.x}:${magnetic.y}:${magnetic.z}:" +
+                      "$light:$temp:" +
+                      "$nanoTime:$milliTime:" +
+                      "$nanoEntropy:$milliEntropy"
+        
+        val hash = sha256(sealData.toByteArray())
+        val seal = hash.copyOfRange(0, 16).joinToString("") { "%02x".format(it) }  // 16 bytes = 128 bits
+
+        // Sign the seal with device key
+        val signature = deviceKeyManager.signDataBase64(seal.toByteArray())
+        val kid = deviceKeyManager.getShortKid()
+
+        return SignedSeal(
+            seal = seal,
+            signature = signature,
+            kid = kid
+        )
+    }
+
+    /**
+     * Data class for signed seal
+     */
+    data class SignedSeal(
+        val seal: String,
+        val signature: String,
+        val kid: String
+    ) {
+        fun toCompactString(): String = "$seal:$signature:$kid"
     }
 
     /**

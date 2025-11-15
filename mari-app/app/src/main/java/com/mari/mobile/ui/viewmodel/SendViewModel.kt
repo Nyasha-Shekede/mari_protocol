@@ -78,7 +78,8 @@ class SendViewModel @Inject constructor(
         if (!isTrackingMotion) return
         
         event?.let {
-            val currentTimestamp = System.currentTimeMillis()
+            val currentNanos = System.nanoTime()
+            val currentMillis = System.currentTimeMillis()
             
             if (lastTimestamp != 0L) {
                 val x = it.values[0]
@@ -90,23 +91,43 @@ class SendViewModel @Inject constructor(
                 val deltaY = kotlin.math.abs(y - lastY)
                 val deltaZ = kotlin.math.abs(z - lastZ)
                 
-                // Calculate magnitude of acceleration
-                val magnitude = sqrt(x * x + y * y + z * z)
+                // Motion threshold to filter out STATIC sensor noise only (0.8 m/s²)
+                val STATIC_NOISE_THRESHOLD = 0.8f
+                val totalDelta = deltaX + deltaY + deltaZ
                 
-                // Accumulate motion data (simulating shake intensity)
-                accumulatedMotion = accumulatedMotion.copy(
-                    x = accumulatedMotion.x + deltaX * 10f, // Amplify for better UX
-                    y = accumulatedMotion.y + deltaY * 10f,
-                    z = accumulatedMotion.z + magnitude * 0.5f
-                )
-                
-                _uiState.update { it.copy(motionData = accumulatedMotion) }
+                // Only accumulate if motion exceeds static noise threshold
+                if (totalDelta > STATIC_NOISE_THRESHOLD) {
+                    // Calculate magnitude of acceleration
+                    val magnitude = sqrt(x * x + y * y + z * z)
+                    
+                    // HIGH ENTROPY CAPTURE - Include timing chaos
+                    val timingEntropy = (currentNanos % 1000).toFloat() / 1000f  // Nanosecond chaos
+                    val millisEntropy = (currentMillis % 100).toFloat() / 100f   // Millisecond variation
+                    
+                    // Chaotic amplification - small differences become huge
+                    // Each shake is unique due to:
+                    // 1. Exact timing (nanosecond precision)
+                    // 2. Acceleration patterns (impossible to reproduce exactly)
+                    // 3. Magnitude variations (human hand tremor)
+                    val chaoticX = deltaX * (10f + timingEntropy * 5f)  // 10-15x amplification
+                    val chaoticY = deltaY * (10f + millisEntropy * 5f)  // 10-15x amplification
+                    val chaoticZ = magnitude * (0.5f + timingEntropy * 0.3f)  // 0.5-0.8x
+                    
+                    // Accumulate with chaotic amplification
+                    accumulatedMotion = accumulatedMotion.copy(
+                        x = accumulatedMotion.x + chaoticX,
+                        y = accumulatedMotion.y + chaoticY,
+                        z = accumulatedMotion.z + chaoticZ
+                    )
+                    
+                    _uiState.update { it.copy(motionData = accumulatedMotion) }
+                }
             }
             
             lastX = it.values[0]
             lastY = it.values[1]
             lastZ = it.values[2]
-            lastTimestamp = currentTimestamp
+            lastTimestamp = currentMillis
         }
     }
     

@@ -17,42 +17,100 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.Mari.mobile.ui.models.Transaction
 import androidx.compose.runtime.collectAsState
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.accompanist.permissions.isGranted
+import android.Manifest
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.Priority
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.background
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun MainScreen(
     onSendClick: () -> Unit,
-    onReceiveClick: () -> Unit,
     onLogout: () -> Unit,
-    viewModel: com.Mari.mobile.ui.viewmodel.MainViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    viewModel: com.Mari.mobile.ui.viewmodel.MainViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
-    // Location updates with permission check
+    // Location permission handling
+    val locationPermissions = rememberMultiplePermissionsState(
+        listOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+    )
+    
+    // CONTINUOUS location updates while app is active
     val context = LocalContext.current
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
+    LaunchedEffect(locationPermissions.allPermissionsGranted) {
+        if (locationPermissions.allPermissionsGranted) {
             val fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(context)
-            try {
-                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                    location?.let {
-                        viewModel.updateLocation(it.latitude, it.longitude)
+            
+            // Create location request for continuous updates
+            val locationRequest = com.google.android.gms.location.LocationRequest.Builder(
+                Priority.PRIORITY_HIGH_ACCURACY,
+                10000L // Update every 10 seconds
+            ).apply {
+                setMinUpdateIntervalMillis(5000L) // But not faster than 5 seconds
+                setMaxUpdateDelayMillis(15000L) // Max 15 seconds between updates
+            }.build()
+            
+            // Location callback for continuous updates
+            val locationCallback = object : com.google.android.gms.location.LocationCallback() {
+                override fun onLocationResult(result: com.google.android.gms.location.LocationResult) {
+                    result.lastLocation?.let { location ->
+                        viewModel.updateLocation(location.latitude, location.longitude)
                     }
                 }
-            } catch (e: Exception) {
-                // Handle error
             }
+            
+            try {
+                // Start continuous location updates
+                fusedLocationClient.requestLocationUpdates(
+                    locationRequest,
+                    locationCallback,
+                    android.os.Looper.getMainLooper()
+                )
+                
+                // Also get immediate location
+                fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+                    .addOnSuccessListener { location ->
+                        location?.let {
+                            viewModel.updateLocation(it.latitude, it.longitude)
+                        }
+                    }
+                
+                // Cleanup when composable leaves composition
+                kotlinx.coroutines.awaitCancellation()
+            } catch (e: SecurityException) {
+                // Permission denied
+                locationPermissions.launchMultiplePermissionRequest()
+            } catch (e: Exception) {
+                // Other errors - try to get last known location
+                try {
+                    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                        location?.let {
+                            viewModel.updateLocation(it.latitude, it.longitude)
+                        }
+                    }
+                } catch (_: Exception) {}
+            } finally {
+                // Stop location updates when leaving
+                try {
+                    fusedLocationClient.removeLocationUpdates(locationCallback)
+                } catch (_: Exception) {}
+            }
+        } else {
+            // Request permissions if not granted
+            locationPermissions.launchMultiplePermissionRequest()
         }
-    }
-    
-    LaunchedEffect(Unit) {
-        // Request location permission
-        locationPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
     }
     
     Scaffold(
@@ -81,14 +139,6 @@ fun MainScreen(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onSendClick,
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(Icons.Default.Send, contentDescription = "Send Money")
-            }
         }
     ) { padding ->
         LazyColumn(
@@ -107,8 +157,15 @@ fun MainScreen(
                 BalanceCard(
                     balance = uiState.balance,
                     location = uiState.location,
-                    onSendClick = onSendClick,
-                    onReceiveClick = onReceiveClick
+                    onSendClick = onSendClick
+                )
+            }
+            
+            // QR Code Card
+            item {
+                QRCodeCard(
+                    userPhone = uiState.userPhone,
+                    bloodHash = "demo_user_${uiState.userPhone.take(10)}" // In production, use real bloodHash
                 )
             }
             
@@ -143,8 +200,7 @@ fun MainScreen(
 fun BalanceCard(
     balance: Double,
     location: com.Mari.mobile.ui.viewmodel.LocationInfo?,
-    onSendClick: () -> Unit,
-    onReceiveClick: () -> Unit
+    onSendClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -164,7 +220,7 @@ fun BalanceCard(
             )
             
             Text(
-                text = "¢${String.format("%.2f", balance)}",
+                text = "R${String.format("%.2f", balance)}",
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -188,37 +244,19 @@ fun BalanceCard(
                 )
             }
             
-            Row(
+            Button(
+                onClick = onSendClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color(0xFFF6B337)
+                )
             ) {
-                Button(
-                    onClick = onReceiveClick,
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color(0xFFF6B337)
-                    )
-                ) {
-                    Icon(Icons.Default.Download, contentDescription = null)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Receive")
-                }
-                
-                Button(
-                    onClick = onSendClick,
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color(0xFFF6B337)
-                    )
-                ) {
-                    Icon(Icons.Default.Send, contentDescription = null)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Send")
-                }
+                Icon(Icons.Default.Send, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Send Money", style = MaterialTheme.typography.titleMedium)
             }
         }
     }
@@ -347,7 +385,7 @@ fun TransactionItem(transaction: Transaction) {
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    text = "${if (transaction.type == "received") "+" else "-"}¢${String.format("%.2f", transaction.amount)}",
+                    text = "${if (transaction.type == "received") "+" else "-"}R${String.format("%.2f", transaction.amount)}",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = if (transaction.type == "received") 
@@ -383,3 +421,84 @@ fun getDemoTransactions() = listOf(
         hsmId = "AUR-1234"
     )
 )
+
+
+@Composable
+fun QRCodeCard(
+    userPhone: String,
+    bloodHash: String
+) {
+    var showQR by remember { mutableStateOf(false) }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Your Payment QR Code",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "Others can scan to pay you",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                IconButton(onClick = { showQR = !showQR }) {
+                    Icon(
+                        imageVector = if (showQR) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = if (showQR) "Hide QR" else "Show QR"
+                    )
+                }
+            }
+            
+            if (showQR) {
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Generate QR code
+                val qrBitmap = remember(bloodHash) {
+                    com.Mari.mobile.ui.qr.QRCodeGenerator.generatePaymentQRCode(bloodHash, size = 400)
+                }
+                
+                // Display QR code
+                androidx.compose.foundation.Image(
+                    bitmap = qrBitmap.asImageBitmap(),
+                    contentDescription = "Payment QR Code",
+                    modifier = Modifier
+                        .size(200.dp)
+                        .background(Color.White, RoundedCornerShape(8.dp))
+                        .padding(8.dp)
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Text(
+                    text = userPhone,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                Text(
+                    text = "ID: ${bloodHash.take(16)}...",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
