@@ -617,6 +617,8 @@ fun ConfirmationScreen(
     isLoading: Boolean,
     onConfirm: () -> Unit
 ) {
+    val isOnline = sendMode != "offline"
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -629,6 +631,83 @@ fun ConfirmationScreen(
             fontWeight = FontWeight.SemiBold
         )
         
+        // Recipient Card with verification status
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isOnline && recipientName != null && recipientName != "Unknown User") 
+                    MaterialTheme.colorScheme.primaryContainer 
+                else 
+                    MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Recipient",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    // Verification badge
+                    if (isOnline && recipientName != null && recipientName != "Unknown User") {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "Verified",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "Verified",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    } else if (!isOnline) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.WifiOff,
+                                contentDescription = "Offline",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "Offline",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+                
+                Text(
+                    text = recipientName ?: "User $recipient",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                Text(
+                    text = recipient,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        
+        // Transaction Details Card
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
@@ -639,10 +718,6 @@ fun ConfirmationScreen(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                DetailRow(label = "Recipient", value = recipientName ?: recipient)
-                Divider()
-                DetailRow(label = "Phone", value = recipient)
-                Divider()
                 DetailRow(label = "Amount", value = "R${amount}")
                 Divider()
                 DetailRow(
@@ -650,7 +725,10 @@ fun ConfirmationScreen(
                     value = location?.let { "${String.format("%.4f", it.lat)}, ${String.format("%.4f", it.lng)}" } ?: "Unknown"
                 )
                 Divider()
-                DetailRow(label = "Mode", value = if (sendMode == "offline") "SMS" else "HTTP")
+                DetailRow(
+                    label = "Send Mode", 
+                    value = if (sendMode == "offline") "SMS (Offline)" else "HTTP (Online)"
+                )
             }
         }
         

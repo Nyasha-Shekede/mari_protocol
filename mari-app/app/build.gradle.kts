@@ -153,9 +153,10 @@ dependencies {
 
     // Removed zstd-jni; using GZIP for SMS compression to avoid JNI on Android
 
-    // Networking: Retrofit + OkHttp + Moshi
+    // Networking: Retrofit + OkHttp + Moshi + Gson
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0") // For user lookup API
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 
