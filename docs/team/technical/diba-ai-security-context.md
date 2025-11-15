@@ -835,3 +835,464 @@ class FeatureEngineer:
 
 ---
 
+
+## 6. Regulatory Compliance (FICA, POPIA, SARB)
+
+### FICA (Financial Intelligence Centre Act)
+
+**Your Responsibilities:**
+1. **Suspicious Activity Reporting (SAR)**
+2. **Customer Due Diligence (CDD)**
+3. **Record Keeping**
+4. **AML/CFT Compliance**
+
+**Implementation:**
+
+```python
+class FICACompliance:
+    def __init__(self):
+        self.fic_api = FICAPIClient()
+        self.threshold_high_value = 25000  # R25K triggers enhanced monitoring
+        self.threshold_sar = 50000  # R50K triggers SAR consideration
+    
+    async def check_transaction(self, transaction: Transaction) -> ComplianceResult:
+        checks = []
+        
+        # 1. High-value transaction check
+        if transaction.amount >= self.threshold_high_value:
+            checks.append({
+                'type': 'HIGH_VALUE',
+                'action': 'ENHANCED_MONITORING',
+                'details': f'Transaction amount R{transaction.amount} exceeds R25K threshold'
+            })
+        
+        # 2. Suspicious pattern detection
+        suspicious_patterns = await self.detect_suspicious_patterns(transaction)
+        if suspicious_patterns:
+            checks.append({
+                'type': 'SUSPICIOUS_PATTERN',
+                'action': 'REVIEW_REQUIRED',
+                'patterns': suspicious_patterns
+            })
+        
+        # 3. SAR threshold check
+        if transaction.amount >= self.threshold_sar:
+            sar_required = await self.evaluate_sar_requirement(transaction)
+            if sar_required:
+                await self.submit_sar(transaction)
+                checks.append({
+                    'type': 'SAR_SUBMITTED',
+                    'action': 'REPORTED_TO_FIC',
+                    'reference': sar_reference
+                })
+        
+        return ComplianceResult(checks=checks)
+    
+    async def detect_suspicious_patterns(self, transaction: Transaction) -> List[str]:
+        """Detect patterns that may indicate money laundering"""
+        patterns = []
+        
+        # Pattern 1: Structuring (multiple transactions just below reporting threshold)
+        recent_txs = await self.get_recent_transactions(transaction.sender_id, hours=24)
+        if len(recent_txs) > 5 and all(tx.amount < 25000 for tx in recent_txs):
+            total = sum(tx.amount for tx in recent_txs)
+            if total > 100000:
+                patterns.append('STRUCTURING')
+        
+        # Pattern 2: Rapid movement (money in, money out)
+        if await self.check_rapid_movement(transaction):
+            patterns.append('RAPID_MOVEMENT')
+        
+        # Pattern 3: Circular transactions
+        if await self.check_circular_transactions(transaction):
+            patterns.append('CIRCULAR_TRANSACTIONS')
+        
+        # Pattern 4: Unusual recipient (high-risk country, sanctioned entity)
+        if await self.check_high_risk_recipient(transaction.recipient_id):
+            patterns.append('HIGH_RISK_RECIPIENT')
+        
+        return patterns
+    
+    async def submit_sar(self, transaction: Transaction) -> str:
+        """Submit Suspicious Activity Report to FIC"""
+        sar = {
+            'reportingEntity': 'Mari Protocol',
+            'transactionId': transaction.id,
+            'amount': transaction.amount,
+            'currency': 'ZAR',
+            'suspiciousIndicators': await self.get_suspicious_indicators(transaction),
+            'narrative': await self.generate_sar_narrative(transaction),
+            'timestamp': datetime.utcnow().isoformat()
+        }
+        
+        response = await self.fic_api.submit_sar(sar)
+        return response['reference']
+```
+
+### POPIA (Protection of Personal Information Act)
+
+**Data Minimization:**
+```python
+class POPIACompliance:
+    @staticmethod
+    def hash_pii(phone_number: str) -> str:
+        """Hash phone numbers (PII) before storage"""
+        return hashlib.sha256(phone_number.encode()).hexdigest()
+    
+    @staticmethod
+    def anonymize_location(lat: float, lng: float, precision: int = 3) -> tuple:
+        """Reduce GPS precision for privacy"""
+        return (round(lat, precision), round(lng, precision))
+    
+    @staticmethod
+    def apply_retention_policy(data: dict) -> dict:
+        """Apply data retention limits"""
+        # Transaction data: 7 years (FICA requirement)
+        # Physics seals: 90 days (operational need only)
+        # User profiles: Until account closure + 7 years
+        
+        if data['type'] == 'physics_seal':
+            if (datetime.now() - data['created_at']).days > 90:
+                return None  # Delete
+        
+        return data
+```
+
+**User Rights Implementation:**
+```python
+class UserDataRights:
+    async def handle_data_request(self, user_id: str, request_type: str):
+        """Handle POPIA data subject requests"""
+        
+        if request_type == 'ACCESS':
+            # Right to access: Provide all data we have
+            return await self.export_user_data(user_id)
+        
+        elif request_type == 'RECTIFICATION':
+            # Right to correct: Allow user to update their data
+            return await self.update_user_data(user_id)
+        
+        elif request_type == 'ERASURE':
+            # Right to be forgotten: Delete user data
+            # Exception: Must retain for 7 years per FICA
+            return await self.anonymize_user_data(user_id)
+        
+        elif request_type == 'PORTABILITY':
+            # Right to data portability: Export in machine-readable format
+            return await self.export_user_data(user_id, format='json')
+```
+
+### SARB (South African Reserve Bank) Compliance
+
+**Payment System Authorization:**
+- Apply for SARB sandbox participation
+- Demonstrate compliance with National Payment System Act
+- Prove operational resilience
+- Show consumer protection measures
+
+**Reporting Requirements:**
+```python
+class SARBReporting:
+    async def generate_monthly_report(self, month: int, year: int):
+        """Generate monthly report for SARB"""
+        return {
+            'reportingPeriod': f'{year}-{month:02d}',
+            'totalTransactions': await self.count_transactions(month, year),
+            'totalVolume': await self.sum_transaction_volume(month, year),
+            'averageTransactionAmount': await self.avg_transaction_amount(month, year),
+            'fraudRate': await self.calculate_fraud_rate(month, year),
+            'systemUptime': await self.calculate_uptime(month, year),
+            'incidentCount': await self.count_incidents(month, year),
+            'userComplaints': await self.count_complaints(month, year)
+        }
+```
+
+---
+
+## 7. Security Threat Analysis
+
+### Threat Matrix (Your Focus)
+
+| Threat | Likelihood | Impact | Mitigation |
+|--------|-----------|--------|------------|
+| Account Takeover | High | High | Behavioral biometrics, device attestation |
+| Synthetic Identity Fraud | Medium | High | KYC verification, network analysis |
+| Money Laundering | Medium | Critical | Transaction monitoring, SAR reporting |
+| Fraud Rings | Medium | High | Graph neural networks, pattern detection |
+| Insider Threat (Bank Employee) | Low | Critical | Audit logging, access controls |
+| Data Breach | Low | Critical | Encryption, HSM, security audits |
+
+### Attack Scenarios & Detection
+
+**Scenario 1: Account Takeover**
+```
+Attacker steals user's phone → Tries to make payment
+Detection:
+- Behavioral biometrics detects unusual pattern
+- Location anomaly (attacker in different city)
+- Device attestation may fail (if phone rooted)
+- Physics seal may be unusual (different shake pattern)
+Response: Block transaction, alert user, require re-authentication
+```
+
+**Scenario 2: Fraud Ring**
+```
+10 new accounts created → All transact with each other → Money exits to single account
+Detection:
+- Graph neural network detects star pattern
+- Rapid account creation flagged
+- Circular transaction pattern detected
+- Velocity checks trigger (too many transactions too fast)
+Response: Flag all accounts, submit SAR, freeze suspicious accounts
+```
+
+**Scenario 3: Money Laundering (Structuring)**
+```
+User makes 20 transactions of R24K each (just below R25K threshold) in 24 hours
+Detection:
+- Structuring pattern detected
+- Total volume exceeds R100K threshold
+- Unusual transaction frequency
+Response: Enhanced monitoring, possible SAR submission
+```
+
+---
+
+## 8. Real-Time Scoring Engine
+
+### Ensemble Model Architecture
+
+```python
+class SentinelScoringEngine:
+    def __init__(self):
+        self.physics_model = load_model('physics_seal_classifier')
+        self.behavioral_model = BehavioralBiometricsModel()
+        self.network_model = load_model('fraud_ring_detector')
+        self.rule_engine = RuleEngine()
+    
+    async def score_transaction(self, transaction: Transaction) -> ScoringResult:
+        # Run all models in parallel
+        results = await asyncio.gather(
+            self.score_physics_seal(transaction.physics_seal),
+            self.score_behavioral(transaction),
+            self.score_network(transaction),
+            self.apply_rules(transaction)
+        )
+        
+        physics_score, behavioral_score, network_score, rule_score = results
+        
+        # Weighted ensemble
+        final_score = (
+            physics_score * 0.4 +
+            behavioral_score * 0.3 +
+            network_score * 0.2 +
+            rule_score * 0.1
+        )
+        
+        # Decision logic
+        if final_score >= 0.95:
+            decision = 'APPROVE'
+            confidence = final_score
+        elif final_score >= 0.80:
+            decision = 'REVIEW'
+            confidence = final_score
+        else:
+            decision = 'DECLINE'
+            confidence = 1 - final_score
+        
+        return ScoringResult(
+            score=final_score,
+            decision=decision,
+            confidence=confidence,
+            breakdown={
+                'physics': physics_score,
+                'behavioral': behavioral_score,
+                'network': network_score,
+                'rules': rule_score
+            },
+            processing_time_ms=self.get_processing_time()
+        )
+```
+
+### Performance Requirements
+
+- **Latency:** <200ms (p95)
+- **Throughput:** 10,000 TPS
+- **Accuracy:** >99.5%
+- **False Positive Rate:** <0.1%
+- **Uptime:** >99.9%
+
+---
+
+## 9. Explainable AI & Reporting
+
+### Why Explainability Matters
+
+Banks and regulators need to understand WHY a transaction was flagged. "Black box" ML is not acceptable.
+
+### SHAP (SHapley Additive exPlanations)
+
+```python
+import shap
+
+class ExplainableAI:
+    def __init__(self, model):
+        self.model = model
+        self.explainer = shap.TreeExplainer(model)  # For tree-based models
+    
+    def explain_prediction(self, transaction_features):
+        """Generate explanation for a single prediction"""
+        shap_values = self.explainer.shap_values(transaction_features)
+        
+        # Get top contributing features
+        feature_importance = sorted(
+            zip(transaction_features.columns, shap_values[0]),
+            key=lambda x: abs(x[1]),
+            reverse=True
+        )[:5]
+        
+        explanation = {
+            'prediction': self.model.predict([transaction_features])[0],
+            'top_factors': [
+                {
+                    'feature': feature,
+                    'contribution': float(contribution),
+                    'direction': 'increases_risk' if contribution > 0 else 'decreases_risk'
+                }
+                for feature, contribution in feature_importance
+            ]
+        }
+        
+        return explanation
+
+# Example output:
+{
+    'prediction': 0.92,  # 92% fraud probability
+    'top_factors': [
+        {'feature': 'amount_zscore', 'contribution': 0.35, 'direction': 'increases_risk'},
+        {'feature': 'is_new_recipient', 'contribution': 0.25, 'direction': 'increases_risk'},
+        {'feature': 'distance_from_home', 'contribution': 0.15, 'direction': 'increases_risk'},
+        {'feature': 'time_since_last_tx', 'contribution': -0.10, 'direction': 'decreases_risk'},
+        {'feature': 'recipient_frequency', 'contribution': -0.08, 'direction': 'decreases_risk'}
+    ]
+}
+```
+
+### Fraud Investigation Dashboard
+
+```python
+class FraudDashboard:
+    def generate_investigation_report(self, transaction_id: str):
+        """Generate detailed report for fraud investigators"""
+        
+        transaction = self.get_transaction(transaction_id)
+        user = self.get_user(transaction.sender_id)
+        
+        report = {
+            'transaction': {
+                'id': transaction.id,
+                'amount': transaction.amount,
+                'timestamp': transaction.timestamp,
+                'status': transaction.status
+            },
+            'user_profile': {
+                'account_age_days': user.account_age_days,
+                'total_transactions': user.total_transactions,
+                'fraud_history': user.fraud_history
+            },
+            'sentinel_analysis': {
+                'overall_score': transaction.sentinel_score,
+                'physics_seal_score': transaction.physics_score,
+                'behavioral_score': transaction.behavioral_score,
+                'network_score': transaction.network_score,
+                'explanation': self.explainer.explain(transaction)
+            },
+            'similar_cases': self.find_similar_fraud_cases(transaction),
+            'recommended_action': self.recommend_action(transaction)
+        }
+        
+        return report
+```
+
+---
+
+## 10. Your Development Roadmap
+
+### Month 1-3: Foundation
+- [ ] Set up ML infrastructure (Kubeflow, MLflow)
+- [ ] Build physics seal validation model (99% accuracy)
+- [ ] Implement basic behavioral biometrics
+- [ ] FNB API integration (test environment)
+- [ ] FICA/POPIA compliance framework
+
+### Month 4-6: Pilot
+- [ ] Deploy Sentinel to production
+- [ ] FNB pilot launch (10K users)
+- [ ] Real-time monitoring dashboard
+- [ ] Fraud investigation tools
+- [ ] Model performance tracking
+
+### Month 7-12: Scale
+- [ ] Advanced fraud detection (GNN for fraud rings)
+- [ ] Multi-bank integration (Capitec, TymeBank)
+- [ ] Automated SAR generation
+- [ ] Model retraining pipeline
+- [ ] 100K users, <0.1% fraud rate
+
+### Month 13-18: Optimize
+- [ ] 99.5% accuracy achieved
+- [ ] 5 bank partnerships
+- [ ] Explainable AI dashboard
+- [ ] Predictive fraud prevention
+- [ ] 1M users, R100M monthly volume
+
+---
+
+## Key Success Metrics
+
+**Model Performance:**
+- Physics seal validation: >99.5% accuracy
+- Behavioral biometrics: <0.1% false positive rate
+- Network analysis: >95% fraud ring detection
+- Overall fraud rate: <0.1% (vs 2-3% industry average)
+
+**Business Impact:**
+- Fraud reduction: 80-90% vs baseline
+- Cost savings: R35M per 1M transactions
+- Bank satisfaction: >90% (NPS score)
+- Regulatory compliance: 100% (zero violations)
+
+**Operational:**
+- Latency: <200ms (p95)
+- Uptime: >99.9%
+- SAR accuracy: >95% (no false SARs)
+- Model drift detection: <5% degradation before retraining
+
+---
+
+## Conclusion
+
+You're building the AI brain of Mari Protocol. Your Sentinel platform will:
+
+1. **Protect users** from fraud and account takeover
+2. **Save banks** R35M+ per 1M transactions
+3. **Enable instant payments** through trusted fraud detection
+4. **Ensure compliance** with FICA, POPIA, and SARB regulations
+5. **Scale to millions** of users across Africa
+
+**Your FNB connection is your superpower. Use it to:**
+- Get early access to bank APIs
+- Understand fraud patterns from insider perspective
+- Build credibility with other banks
+- Design integration that banks actually want
+
+**This is not just ML engineering. You're building the security infrastructure for Africa's digital payments.**
+
+**Let's make fraud impossible.** 🛡️
+
+---
+
+**Document Version:** 1.0  
+**Last Updated:** 2024-01-15  
+**Owner:** Dibanisa Fakude (Chief AI Officer)  
+**Status:** Living Document
