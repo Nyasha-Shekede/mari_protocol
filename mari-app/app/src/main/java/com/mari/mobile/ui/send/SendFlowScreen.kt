@@ -156,7 +156,8 @@ fun SendFlowScreen(
                     onStartTracking = { viewModel.startMotionTracking() },
                     onStopTracking = { viewModel.stopMotionTracking() },
                     onNext = { 
-                        viewModel.lookupRecipient(recipient)
+                        // Lookup recipient (online mode only)
+                        viewModel.lookupRecipient(recipient, isOnline)
                         currentStep = 3 
                     }
                 )

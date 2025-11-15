@@ -7,6 +7,11 @@ class SMSProcessor {
   static async processIncomingSMS(smsData) {
     const { from, body } = smsData;
     
+    // Support LOOKUP command: MARI:LOOKUP:+1234567890
+    if (typeof body === 'string' && body.startsWith('MARI:LOOKUP:')) {
+      return this.processLookupRequest(from, body);
+    }
+    
     // Support legacy envelope MARI_SMS:<base64-json> and plain mari://xfer coupons
     if (typeof body === 'string' && body.startsWith('MARI_SMS:')) {
       return this.processMariSMS(from, body);
@@ -17,6 +22,47 @@ class SMSProcessor {
     }
     
     throw new Error('Non-Mari SMS received');
+  }
+  
+  static async processLookupRequest(from, body) {
+    // Extract phone number from MARI:LOOKUP:+1234567890
+    const phone = body.replace('MARI:LOOKUP:', '').trim();
+    
+    try {
+      // Query database for user
+      const User = require('../models/User');
+      const user = await User.findOne({ phoneNumber: phone }).select('username phoneNumber');
+      
+      if (user) {
+        // User found - send SMS response with user details
+        const response = `MARI:USER:${user.username}:${user.phoneNumber}:${user._id}`;
+        await sendSms(from, response);
+        
+        return {
+          type: 'LOOKUP',
+          found: true,
+          username: user.username,
+          phoneNumber: user.phoneNumber,
+          userId: String(user._id)
+        };
+      } else {
+        // User not found - send SMS response
+        const response = `MARI:NOTFOUND:${phone}`;
+        await sendSms(from, response);
+        
+        return {
+          type: 'LOOKUP',
+          found: false,
+          phoneNumber: phone
+        };
+      }
+    } catch (error) {
+      // Error - send SMS response
+      const response = `MARI:ERROR:Lookup failed`;
+      await sendSms(from, response);
+      
+      throw new Error(`Lookup failed: ${error.message}`);
+    }
   }
 
   static async processMariSMS(from, body) {

@@ -44,14 +44,100 @@ class SendViewModel @Inject constructor(
     private var accumulatedMotion = MotionData(0f, 0f, 0f)
     private var isTrackingMotion = false
     
-    fun lookupRecipient(phone: String) {
-        _uiState.update {
-            it.copy(
-                recipientName = "User $phone",
-                recipientBioHash = phone,
-                isLoading = false,
-                error = null
+    fun lookupRecipient(phone: String, isOnline: Boolean) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            
+            if (isOnline) {
+                // ONLINE MODE: Direct HTTP API call (instant)
+                try {
+                    val response = com.Mari.mobileapp.data.api.RetrofitClient.apiService.lookupUserByPhone(phone)
+                    
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        val userData = response.body()?.data
+                        _uiState.update {
+                            it.copy(
+                                recipientName = userData?.username ?: "User $phone",
+                                recipientBioHash = userData?.id ?: phone,
+                                recipientPhone = userData?.phoneNumber ?: phone,
+                                isLoading = false,
+                                error = null
+                            )
+                        }
+                    } else {
+                        // User not found - use phone as fallback
+                        _uiState.update {
+                            it.copy(
+                                recipientName = "Unknown User",
+                                recipientBioHash = phone,
+                                recipientPhone = phone,
+                                isLoading = false,
+                                error = null
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Network error - use phone as fallback
+                    _uiState.update {
+                        it.copy(
+                            recipientName = "Unknown User",
+                            recipientBioHash = phone,
+                            recipientPhone = phone,
+                            isLoading = false,
+                            error = null
+                        )
+                    }
+                }
+            } else {
+                // OFFLINE MODE (SMS): Send SMS lookup request to server
+                // Flow: App → SMS → Twilio → Server → Query DB → SMS back → App
+                try {
+                    sendSmsLookupRequest(phone)
+                    
+                    // Wait for SMS response (with timeout)
+                    // TODO: Implement SMS response listener
+                    // For now, use phone as fallback and proceed
+                    _uiState.update {
+                        it.copy(
+                            recipientName = "User $phone", // Will be updated when SMS response arrives
+                            recipientBioHash = phone,
+                            recipientPhone = phone,
+                            isLoading = false,
+                            error = null
+                        )
+                    }
+                } catch (e: Exception) {
+                    _uiState.update {
+                        it.copy(
+                            recipientName = "User $phone",
+                            recipientBioHash = phone,
+                            recipientPhone = phone,
+                            isLoading = false,
+                            error = "SMS lookup failed: ${e.message}"
+                        )
+                    }
+                }
+            }
+        }
+    }
+    
+    private fun sendSmsLookupRequest(phone: String) {
+        // Send SMS to Mari server via Twilio
+        // Format: "MARI:LOOKUP:$phone"
+        val smsManager = android.telephony.SmsManager.getDefault()
+        val mariServerNumber = "+1234567890" // TODO: Get from config
+        val message = "MARI:LOOKUP:$phone"
+        
+        try {
+            smsManager.sendTextMessage(
+                mariServerNumber,
+                null,
+                message,
+                null, // sentIntent
+                null  // deliveryIntent
             )
+        } catch (e: Exception) {
+            throw Exception("Failed to send SMS lookup: ${e.message}")
         }
     }
     
@@ -230,6 +316,7 @@ class SendViewModel @Inject constructor(
 data class SendUiState(
     val recipientName: String? = null,
     val recipientBioHash: String? = null,
+    val recipientPhone: String? = null,
     val motionData: MotionData = MotionData(),
     val transactionResult: TransactionResult? = null,
     val isLoading: Boolean = false,
