@@ -177,7 +177,7 @@ By using physics (motion + location + time) instead of passwords, we make paymen
 
 **Nyasha Shekede** - Founder & CTO
 - Full-Stack Engineer | Systems Architect | CTO at OppCo
-- Computer Science & Engineering, UCT
+- BSc Computer Science & Engineering, UCT
 - **Owns:** Mobile app (Android), protocol design, HSM architecture, full-stack development
 - **Built:** Working prototype, physics seal algorithm, complete system architecture
 
