@@ -15,17 +15,23 @@ Founder & Architect
 
 ## SLIDE 2: ONE-LINE PITCH
 
-**Mari is the payment protocol that works everywhere - online or offline - secured by physics, not passwords.**
+**Mari is payment infrastructure for banks - like Stripe for Africa, not Venmo for Africa.**
+
+*Physics-secured protocol that banks integrate into their apps for instant, fraud-proof payments.*
 
 ---
 
 ## SLIDE 3: PURPOSE
 
-**"We are in the business of making payments work anywhere in Africa."**
+**"We are building the payment infrastructure for Africa's digital economy."**
 
-We exist to solve the fundamental problem that payments fail when internet fails. 
+**The Problem:** Banks need instant, fraud-proof payments but lack the technology.
 
-By using physics (motion + location + time) instead of passwords, we make payments both more secure and more accessible.
+**Our Solution:** Mari provides the infrastructure layer (protocol + HSM network) that banks integrate into their existing apps.
+
+**The Model:** B2B2C infrastructure (like Visa, Stripe, AWS) - NOT a consumer app (like Venmo, Cash App).
+
+**Why It Matters:** Infrastructure scales faster, has stronger moats, and creates winner-takes-all dynamics.
 
 ---
 
@@ -148,28 +154,42 @@ By using physics (motion + location + time) instead of passwords, we make paymen
 
 ---
 
-## SLIDE 9: COMPETITION
+## SLIDE 9: COMPETITION & POSITIONING
 
-| Feature | Bank Transfers | Cards | SnapScan | Cash | **Mari** |
-|---------|---------------|-------|----------|------|----------|
-| Speed | 1-3 days | Instant | Instant | Instant | **2 seconds** |
-| Works offline | ❌ | ❌ | ❌ | ✅ | **✅ (SMS)** |
-| Fraud prevention | ⚠️ | ⚠️ | ⚠️ | ❌ | **✅ (99.95%)** |
-| Cost | R5 | 3% | 3% | Free | **R0.50** |
-| Ease of use | ❌ | ⚠️ | ⚠️ | ✅ | **✅** |
+### We're NOT Competing with Consumer Apps
 
-**Differentiation:**
-1. **Physics-based security** (no one else has this)
-2. **Offline payments** (works during load shedding)
-3. **B2B2C model** (banks integrate, not standalone app)
-4. **Protocol infrastructure** (platform play, not app play)
+**Consumer Apps (Different Market):**
+- SnapScan, Zapper: Merchant QR payments (~3M users, limited adoption)
+- M-Pesa: Mobile money (dominant in Kenya, not in SA)
+- Venmo, Cash App: P2P apps (not in Africa)
+
+**Why We're Different:** We're infrastructure (B2B), they're apps (B2C)
+
+### We're Competing with Payment Infrastructure
+
+| Feature | Card Networks (Visa) | Bank Transfers | **Mari Protocol** |
+|---------|---------------------|----------------|-------------------|
+| **Model** | B2B2C (infrastructure) | Bank-to-bank | **B2B2C (infrastructure)** |
+| **Speed** | Instant | 1-3 days | **2 seconds** |
+| **Offline** | ❌ | ❌ | **✅ (SMS)** |
+| **Fraud** | 2-3% fraud rate | 1-2% fraud rate | **<0.1% (99.95% accuracy)** |
+| **Cost** | 3% merchant fee | R5 per transfer | **R0.10 per transaction** |
+| **Integration** | Complex (6-12 months) | Built-in | **Simple SDK (2-4 weeks)** |
+
+**Our Positioning:**
+1. **Infrastructure play** (like Visa, not like Venmo)
+2. **B2B2C model** (banks are customers, users are end-users)
+3. **Physics-based security** (unique, defensible)
+4. **Offline capability** (works during load shedding)
 
 **Competitive Moats:**
-- Network effects (winner-takes-all)
-- Bank partnerships (exclusive contracts)
-- HSM infrastructure (R85M, 18 months to build)
-- Fraud detection data (more transactions = better models)
-- Patents (physics seal method, 20-year protection)
+- **Network effects** (winner-takes-all, exponential growth)
+- **Bank partnerships** (exclusive contracts, 12-24 months)
+- **HSM infrastructure** (R85M + 18 months to build)
+- **Fraud detection data** (more transactions = better models)
+- **Patents** (physics seal method, 20-year protection)
+
+**Key Insight:** We're not another payment app. We're the infrastructure layer that makes all payment apps better.
 
 ---
 

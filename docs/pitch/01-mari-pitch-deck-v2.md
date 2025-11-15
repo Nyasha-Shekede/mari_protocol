@@ -41,26 +41,40 @@ Engineered with physics-based fraud prevention and bank-grade settlement.
 
 ---
 
-## What Mari Is: Physics-Secured Digital Payments
+## What Mari Is: Payment Infrastructure Protocol
 
-### Traditional Bank Transfer (1-3 days):
-1. Enter account number (16 digits)
-2. Enter branch code (6 digits)
+**Mari is NOT a payment app. Mari is the infrastructure layer that banks integrate.**
+
+**Think:**
+- **Visa/Mastercard** = Payment network (infrastructure)
+- **Stripe** = Payment API (infrastructure)
+- **Mari** = Physics-secured payment protocol (infrastructure)
+
+**NOT:**
+- Venmo = Payment app (consumer-facing)
+- Cash App = Payment app (consumer-facing)
+- M-Pesa = Mobile money app (consumer-facing)
+
+### How Users Experience Mari:
+
+**Traditional Bank Transfer (1-3 days):**
+1. Open bank app
+2. Enter account number (16 digits)
+3. Enter branch code (6 digits)
+4. Enter amount
+5. Confirm with OTP (SMS)
+6. Wait 1-3 days for settlement
+7. Hope it's not fraud
+
+**Bank App with Mari Protocol (2 seconds):**
+1. Open **FNB app** (or any bank app with Mari)
+2. Enter phone number
 3. Enter amount
-4. Confirm with OTP (SMS)
-5. Wait 1-3 days for settlement
-6. Hope it's not fraud
+4. **Shake phone** (Mari physics seal)
+5. Money sent instantly
+6. Physics proves it's you (can't be faked remotely)
 
-### Mari Payment (2 seconds):
-1. Enter phone number
-2. Enter amount
-3. **Shake phone** (physics seal)
-4. Money sent instantly
-5. Physics proves it's you (can't be faked remotely)
-
-**Key Difference:**
-- Bank transfers: Slow, complicated, fraud-prone
-- Mari: Instant, simple, physics-secured
+**Key Point:** User never downloads "Mari app" - they use their trusted bank app with Mari protocol integrated.
 
 ---
 
@@ -163,28 +177,31 @@ Payment authorized instantly
 
 ---
 
-## The Three Pieces
+## The Three Layers (Infrastructure Model)
 
-### 1. Your Phone (with Mari SDK)
-- Banks integrate Mari into their existing apps
-- Users never download "Mari app"
-- Use trusted bank app with new capabilities
+### Layer 1: Bank Apps (What Users See)
+- FNB app, Capitec app, Standard Bank app
+- Users interact with their trusted bank
+- Mari SDK integrated (invisible to user)
+- User experience: "FNB Instant Pay - Secured by Mari"
 
-### 2. Mari HSM Network (Secure Infrastructure)
+### Layer 2: Mari Protocol (Infrastructure)
 - Validates physics seals
 - Routes transactions
 - Provides fraud scores to banks
-- Like digital certified mail
+- Like Visa network (invisible infrastructure)
 
-### 3. Bank's System (Moves Money)
+### Layer 3: Bank Systems (Settlement)
 - Bank receives authorization from Mari
 - Bank debits/credits accounts
-- Bank handles settlement
+- Bank handles money movement
+- Bank manages compliance
 
 **Critical Point:**
-- Mari doesn't hold your money - banks do
-- Mari validates security, banks move money
-- Mari is infrastructure, not a bank
+- **Mari is infrastructure** (like Visa network)
+- **Banks are customers** (they integrate Mari)
+- **Users are end-users** (they use bank apps)
+- **B2B2C model** (not B2C)
 
 ---
 
@@ -397,30 +414,38 @@ Both receive SMS confirmation
 
 ---
 
-## Business Model: B2B2C Infrastructure
+## Business Model: Infrastructure Platform (B2B2C)
 
-### Primary Revenue: Bank Licensing
-- SDK embedded into bank apps
-- Banks white-label our technology
-- We provide infrastructure, banks provide customers
+**Mari's Customers = Banks (not end-users)**
+
+**Positioning:**
+- Like **Visa** (banks issue Visa cards, Visa provides network)
+- Like **Stripe** (businesses integrate Stripe, Stripe provides API)
+- Like **AWS** (companies use AWS, AWS provides infrastructure)
+
+**NOT like:**
+- Venmo (direct to consumer)
+- Cash App (direct to consumer)
+- PayPal (direct to consumer)
 
 ### Revenue Streams:
 
-**1. Transaction Fees (Primary)**
-- R0.10 per transaction
-- Charged to banks
-- Banks may pass to users or absorb
-- Volume discounts available
+**1. Transaction Fees (Primary - 80% of revenue)**
+- **R0.10 per transaction**
+- Charged to: **Banks** (our customers)
+- Banks may pass cost to users or absorb
+- Volume discounts for large banks
 
-**2. Bank Licensing (Secondary)**
-- Free tier: Up to 10K transactions/month
-- Enterprise tier: R50,000/month (unlimited)
-- Custom pricing for major banks
+**2. Bank Licensing (Secondary - 15% of revenue)**
+- Free tier: Up to 10K transactions/month (pilot)
+- Enterprise tier: **R50,000/month** (unlimited)
+- Custom pricing for major banks (FNB, Capitec, Standard Bank)
 
-**3. Value-Added Services (Tertiary)**
+**3. Value-Added Services (Tertiary - 5% of revenue)**
 - Advanced fraud analytics: R10,000/month
 - Custom integration support: R50,000/month
 - White-label SDK: R100,000/month
+- Dedicated HSM nodes: R500,000/month
 
 ### Projected Revenue (Year 5):
 
@@ -432,30 +457,49 @@ Value-added services: R50M (500 enterprises × R100K/year)
 Total: R650M/year
 ```
 
+**Key Point:** Banks are our customers. They pay us. They integrate our infrastructure. Users use bank apps (not Mari app).
+
 ---
 
-## Why This Model Wins:
+## Why Infrastructure Model Wins (vs Consumer App Model):
 
-### Lower Cost:
-- Banks bring existing customers
-- No customer acquisition cost
-- Leverage bank marketing
+### Comparison: Mari (Infrastructure) vs Venmo (Consumer App)
 
-### Trust:
-- Users trust their bank
-- Bank handles compliance
+| Factor | Consumer App (Venmo) | Infrastructure (Mari) |
+|--------|---------------------|----------------------|
+| **Customer Acquisition** | High CAC (R500/user) | Low CAC (banks bring users) |
+| **Trust** | Must build from scratch | Leverage bank trust |
+| **Regulatory** | Must get own licenses | Banks handle compliance |
+| **Scale** | Slow (user by user) | Fast (bank by bank) |
+| **Network Effects** | Linear | Exponential |
+| **Defensibility** | Low (easy to copy) | High (bank partnerships) |
+
+### Why Banks Want This:
+
+**Lower Cost:**
+- Banks bring existing customers (11M for FNB, 20M for Capitec)
+- No customer acquisition cost for Mari
+- Banks leverage existing marketing
+
+**Trust:**
+- Users trust their bank (not a new app)
+- Bank handles compliance (FICA, POPIA)
 - Established relationships
 
-### Faster Scale:
-- Tap into existing user bases
+**Faster Scale:**
+- 1 bank partnership = millions of users instantly
 - FNB: 11M customers
 - Capitec: 20M customers
 - Standard Bank: 12M customers
+- **Total: 43M users from 3 banks**
 
-### Regulatory:
-- Banks handle licensing
+**Regulatory:**
+- Banks already have licenses
 - Banks manage compliance
-- We focus on technology
+- Mari focuses on technology
+- Lower regulatory burden
+
+**Key Insight:** Infrastructure scales faster than consumer apps. One bank partnership = millions of users.
 
 ---
 
