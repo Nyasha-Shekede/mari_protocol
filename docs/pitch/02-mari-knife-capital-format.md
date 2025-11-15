@@ -176,28 +176,28 @@ By using physics (motion + location + time) instead of passwords, we make paymen
 ## SLIDE 10: TEAM
 
 **Nyasha Shekede** - Founder & CTO
-- Full-Stack Engineer | Systems Architect
-- CTO at OppCo (Opportunity Connect)
+- Full-Stack Engineer | Systems Architect | CTO at OppCo
 - Computer Science & Engineering, UCT
-- Built full Mari system: Android app, physics seal algorithm, HSM network design, bank integration protocol
+- **Owns:** Mobile app (Android), protocol design, HSM architecture, full-stack development
+- **Built:** Working prototype, physics seal algorithm, complete system architecture
 
-**Dibanisa Fakude** - Co-Founder & Head of AI/ML
+**Dibanisa Fakude** - Co-Founder & Chief AI Officer
 - MSc in Data Science and AI, UCT
-- Currently at FNB South Africa (insider knowledge of banking systems)
-- Specializes in ML and AI models
-- Brings: Fraud detection algorithms, banking relationships, regulatory understanding
+- **Currently at FNB South Africa** (insider advantage)
+- **Owns:** Sentinel (fraud detection platform), ML models, banking partnerships, regulatory compliance
+- **Brings:** FNB relationships, fraud detection expertise, banking domain knowledge
 
-**Cebolenkosi Chamane** - Co-Founder & Business Development
-- Bachelor of Business Science (Computer Science), UCT (2024-2028)
-- Brings: Business strategy, market analysis, partnership development
-- Complements technical team with business acumen
+**Cebolenkosi Chamane** - Co-Founder & Chief Business Officer
+- Bachelor of Business Science (Computer Science), UCT
+- **Owns:** Data architecture, business strategy, go-to-market, partnerships, financial planning
+- **Brings:** Business + technical bridge, market analysis, operational excellence
 
 **Why This Team Wins:**
-- ✅ Technical depth (full-stack, AI/ML, systems architecture)
-- ✅ Banking insider (Diba at FNB = warm intros, domain knowledge)
-- ✅ Business + technical (Cebo bridges both worlds)
-- ✅ All UCT (strong network, local knowledge)
-- ✅ Complementary skills (no gaps)
+- ✅ **Perfect skill triangle:** Full-stack + AI/ML + Business
+- ✅ **Banking insider:** Diba at FNB = warm intros, domain knowledge, faster partnerships
+- ✅ **Proven execution:** Working prototype (not just slides)
+- ✅ **All UCT:** Strong network, local credibility
+- ✅ **No gaps:** Each person owns critical area
 
 ---
 
