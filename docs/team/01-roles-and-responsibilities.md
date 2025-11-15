@@ -271,9 +271,18 @@
 - Future rounds: TBD
 
 ### Advisors (2-3%)
-- Banking advisor: 0.5-1%
-- Technical advisor: 0.5-1%
-- Regulatory advisor: 0.5-1%
+
+**Dr. Godfrey Shekede** - Senior Advisor (Economics & Strategy)
+- Former Senior Economist, Bank of England
+- 40+ years experience in banking, economics, monetary policy
+- **Role:** Strategic advisor, consigliere, not day-to-day operations
+- **Equity:** 0.5-1% (advisory shares, 2-year vesting)
+- **Value:** Gray hair, credibility, central bank relationships, strategic guidance
+
+**Additional Advisors (To be recruited):**
+- Banking executive (ex-CTO of SA bank): 0.5-1%
+- Regulatory expert (ex-SARB): 0.5-1%
+- Successful fintech founder (Yoco/Ozow alumni): 0.5-1%
 
 **Total: 100%**
 

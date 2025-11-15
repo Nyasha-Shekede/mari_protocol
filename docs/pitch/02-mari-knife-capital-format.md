@@ -192,12 +192,21 @@ By using physics (motion + location + time) instead of passwords, we make paymen
 - **Owns:** Data architecture, business strategy, go-to-market, partnerships, financial planning
 - **Brings:** Business + technical bridge, market analysis, operational excellence
 
+**Advisors:**
+
+**Dr. Godfrey Shekede** - Senior Advisor (Economics & Strategy)
+- Former Senior Economist, Bank of England
+- 40+ years experience in banking, economics, and monetary policy
+- **Brings:** Gray hair, credibility, strategic guidance, central bank relationships
+- **Role:** Consigliere (strategic advisor, not day-to-day operations)
+
 **Why This Team Wins:**
 - ✅ **Perfect skill triangle:** Full-stack + AI/ML + Business
-- ✅ **Banking insider:** Diba at FNB = warm intros, domain knowledge, faster partnerships
+- ✅ **Banking insider:** Diba at FNB = warm intros, domain knowledge
+- ✅ **Gray hair:** Dr. Shekede (Bank of England) = credibility, experience
 - ✅ **Proven execution:** Working prototype (not just slides)
-- ✅ **All UCT:** Strong network, local credibility
-- ✅ **No gaps:** Each person owns critical area
+- ✅ **All UCT + Bank of England:** Unbeatable network
+- ✅ **No gaps:** Technical + business + experience covered
 
 ---
 
